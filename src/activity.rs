@@ -1,4 +1,4 @@
-use chrono::{DateTime, FixedOffset, Local};
+use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug, Clone)]

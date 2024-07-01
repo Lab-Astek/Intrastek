@@ -32,16 +32,29 @@ impl Planner {
         self.activities.push(activity);
     }
 
+    fn get_available_asteks<'a>(
+        &self,
+        asteks: &'a Vec<Astek>,
+        activity: Activity,
+    ) -> Vec<&'a Astek> {
+        let mut available_asteks: Vec<&Astek> = Vec::new();
+
+        asteks.iter().for_each(|astek| {
+            if astek.is_available(activity.start, activity.end) {
+                available_asteks.push(astek);
+            }
+        });
+
+        available_asteks
+    }
+
     pub fn compute(&self, asteks: Vec<Astek>) {
         self.activities.iter().for_each(|activity| {
-            asteks.iter().for_each(|astek| {
-                if astek.is_available(activity.start, activity.end) {
-                    println!(
-                        "{} is available for {:?} at {}",
-                        astek.name, activity.activity, activity.location
-                    );
-                }
-            });
+            let available_asteks = self.get_available_asteks(&asteks, activity.clone());
+            println!(
+                "Available asteks for {:?}: {:?}",
+                activity, available_asteks
+            );
         });
     }
 }
