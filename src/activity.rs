@@ -1,9 +1,8 @@
 use std::fmt::{self, Display, Formatter};
 
-use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
-use crate::module::Module;
+use crate::{interval::Interval, module::Module};
 
 #[derive(Deserialize, Serialize, Debug, Clone, Hash, PartialEq, Eq)]
 pub enum Activities {
@@ -30,9 +29,8 @@ impl Display for Activities {
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Activity {
-    pub start: DateTime<FixedOffset>,
     pub activity: Activities,
-    pub end: DateTime<FixedOffset>,
+    pub interval: Interval,
     pub location: String,
     pub needed_asteks: u32,
     pub asteks_names: Vec<String>,
@@ -49,10 +47,9 @@ impl Activity {
         module: Option<Module>,
     ) -> Self {
         Activity {
-            start: DateTime::parse_from_rfc3339(start).unwrap(),
+            interval: Interval::new(start, end),
             activity,
             location: location.to_string(),
-            end: DateTime::parse_from_rfc3339(end).unwrap(),
             needed_asteks,
             asteks_names: Vec::new(),
             module,

@@ -64,11 +64,7 @@ impl Planner {
         let mut available_asteks: Vec<Rc<RefCell<Astek>>> = Vec::new();
 
         asteks.iter().for_each(|astek| {
-            if astek
-                .as_ref()
-                .borrow()
-                .is_available(activity.start, activity.end)
-            {
+            if astek.as_ref().borrow().is_available(&activity.interval) {
                 available_asteks.push(astek.clone());
             }
         });

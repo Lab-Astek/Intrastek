@@ -11,6 +11,7 @@ mod activity;
 mod astek;
 mod module;
 mod planner;
+mod interval;
 
 fn main() {
     let mut planner = Planner::from_file("planner.json").unwrap_or(Planner::new());

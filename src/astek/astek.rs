@@ -3,20 +3,17 @@ use std::fmt::{self, Display, Formatter};
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
-use crate::activity::{Activities, Activity};
+use crate::{
+    activity::{Activities, Activity},
+    interval::Interval,
+};
 
 use super::timetable::Timetable;
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct Indisponibility {
-    pub start: DateTime<FixedOffset>,
-    pub end: DateTime<FixedOffset>,
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Astek {
     pub name: String,
-    indisponibilities: Vec<Indisponibility>,
+    indisponibilities: Vec<Interval>,
     assignations: Vec<Activity>,
     #[serde(skip_deserializing, skip_serializing)]
     timetable: Timetable,
@@ -33,21 +30,21 @@ impl Astek {
     }
 
     pub fn add_indisponibility(&mut self, start: &str, end: &str) {
-        self.indisponibilities.push(Indisponibility {
-            start: DateTime::parse_from_rfc3339(start).unwrap(),
-            end: DateTime::parse_from_rfc3339(end).unwrap(),
-        });
+        self.indisponibilities.push(Interval::new(start, end));
     }
 
-    pub fn is_available(&self, start: DateTime<FixedOffset>, end: DateTime<FixedOffset>) -> bool {
-        self.indisponibilities
-            .iter()
-            .all(|indisponibility| start < indisponibility.start || end > indisponibility.end)
+    pub fn is_available(&self, act_interval: &Interval) -> bool {
+        self.indisponibilities.iter().all(|indisponibility| {
+            !(act_interval.intersects(indisponibility) || !indisponibility.contains(act_interval))
+        })
     }
 
     pub fn assign(&mut self, activity: Activity) {
-        let time = (activity.end.timestamp() - activity.start.timestamp()) / 3600;
-        self.add_indisponibility(&activity.start.to_rfc3339(), &activity.end.to_rfc3339());
+        let time = (activity.interval.end.timestamp() - activity.interval.start.timestamp()) / 3600;
+        self.add_indisponibility(
+            &activity.interval.start.to_rfc3339(),
+            &activity.interval.end.to_rfc3339(),
+        );
         self.timetable.add_time(
             activity.activity.clone(),
             if time <= 4i64 { 0.5f64 } else { 1.0f64 },
@@ -78,9 +75,9 @@ impl Display for Astek {
                 )
             })?;
         writeln!(f, "Assignations:")?;
-        self.assignations
-            .iter()
-            .try_for_each(|activity| writeln!(f, "\t- {}", activity))?;
+        // self.assignations
+        //     .iter()
+        //     .try_for_each(|activity| writeln!(f, "\t- {}", activity))?;
         write!(
             f,
             "{} assignations since start of the year",
