@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::{interval::Interval, module::Module};
 use log::info;
 
-#[derive(Deserialize, Serialize, Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Deserialize, Serialize, Debug, Clone, Hash, PartialEq, Eq, Copy)]
 pub enum Activities {
     FollowUp,
     Bootstrap,
@@ -73,6 +73,7 @@ impl Display for Activity {
         } else {
             writeln!(f, "{}:", self.activity)?;
         }
+        writeln!(f, "\tDate: {}", self.interval.start.date_naive())?;
         writeln!(f, "\tAsteks:")?;
         if self.asteks_names.is_empty() {
             writeln!(f, "\t\t- None")?;

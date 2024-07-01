@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use log::debug;
+
 use crate::activity::Activities;
 
 #[derive(Debug, Clone, Default)]
@@ -10,6 +12,7 @@ pub(super) struct Timetable {
 
 impl Timetable {
     pub(super) fn add_time(&mut self, activity: Activities, assign: f64) {
+        debug!("Adding {} to {}", assign, activity);
         self.total_assgin += assign;
         let count = self.count_per_activity.entry(activity).or_insert(0.0f64);
         *count += assign;

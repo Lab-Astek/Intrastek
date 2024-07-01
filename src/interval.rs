@@ -17,12 +17,8 @@ impl Interval {
         }
     }
 
-    pub fn contains(&self, interval: &Interval) -> bool {
-        self.start <= interval.start && self.end >= interval.end
-    }
-
     pub fn intersects(&self, interval: &Interval) -> bool {
-        self.start < interval.end && self.end > interval.start
+        self.end >= interval.start && self.start <= interval.end
     }
 }
 

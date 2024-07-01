@@ -10,6 +10,7 @@ use crate::{
     activity::{Activities, Activity},
     astek::Astek,
 };
+use log::debug;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string};
 
@@ -23,6 +24,7 @@ fn sort_asteks_by_time_on_activities(
     activity: Activities,
 ) -> Vec<Rc<RefCell<Astek>>> {
     let mut asteks = asteks.to_owned();
+    debug!("Pre sorting {:?}", asteks.clone());
     asteks.sort_by(|a, b| {
         let a = a.borrow().get_time_spent_for_activity(activity.clone());
         let b = b.borrow().get_time_spent_for_activity(activity.clone());
@@ -31,6 +33,7 @@ fn sort_asteks_by_time_on_activities(
             None => Ordering::Equal,
         }
     });
+    debug!("Post sorting {:?}", asteks);
     asteks
 }
 
@@ -76,8 +79,9 @@ impl Planner {
         activity: &mut Activity,
         available_asteks: Vec<Rc<RefCell<Astek>>>,
     ) -> Result<(), String> {
+        let sorted = sort_asteks_by_time_on_activities(&available_asteks, activity.activity);
         for i in 0..activity.needed_asteks {
-            match available_asteks.get(i as usize) {
+            match sorted.get(i as usize) {
                 Some(astek) => {
                     astek.borrow_mut().assign(activity.clone());
                     activity.add_astek(astek.borrow().name.clone());

@@ -41,10 +41,9 @@ impl Astek {
     }
 
     pub fn is_available(&self, act_interval: &Interval) -> bool {
-        self.indisponibilities.iter().all(|indisponibility| {
-            act_interval.intersects(indisponibility.get_interval())
-                && !indisponibility.get_interval().contains(act_interval)
-        })
+        self.indisponibilities
+            .iter()
+            .all(|indisponibility| !act_interval.intersects(indisponibility.get_interval()))
     }
 
     pub fn assign(&mut self, activity: Activity) {
