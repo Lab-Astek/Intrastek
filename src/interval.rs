@@ -1,3 +1,5 @@
+use std::fmt::{self, Display, Formatter};
+
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
@@ -21,5 +23,11 @@ impl Interval {
 
     pub fn intersects(&self, interval: &Interval) -> bool {
         self.start < interval.end && self.end > interval.start
+    }
+}
+
+impl Display for Interval {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{} to {}", self.start, self.end)
     }
 }

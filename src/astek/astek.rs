@@ -1,6 +1,5 @@
 use std::fmt::{self, Display, Formatter};
 
-use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -8,12 +7,15 @@ use crate::{
     interval::Interval,
 };
 
-use super::timetable::Timetable;
+use super::{
+    indisponibility::{Indisponibility, IndisponibilityType},
+    timetable::Timetable,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Astek {
     pub name: String,
-    indisponibilities: Vec<Interval>,
+    indisponibilities: Vec<Indisponibility>,
     assignations: Vec<Activity>,
     #[serde(skip_deserializing, skip_serializing)]
     timetable: Timetable,
@@ -30,21 +32,25 @@ impl Astek {
     }
 
     pub fn add_indisponibility(&mut self, start: &str, end: &str) {
-        self.indisponibilities.push(Interval::new(start, end));
+        self.indisponibilities.push(Indisponibility::new(
+            Interval::new(start, end),
+            IndisponibilityType::Private,
+        ));
     }
 
     pub fn is_available(&self, act_interval: &Interval) -> bool {
         self.indisponibilities.iter().all(|indisponibility| {
-            !(act_interval.intersects(indisponibility) || !indisponibility.contains(act_interval))
+            !(act_interval.intersects(indisponibility.get_interval())
+                || !indisponibility.get_interval().contains(act_interval))
         })
     }
 
     pub fn assign(&mut self, activity: Activity) {
         let time = (activity.interval.end.timestamp() - activity.interval.start.timestamp()) / 3600;
-        self.add_indisponibility(
-            &activity.interval.start.to_rfc3339(),
-            &activity.interval.end.to_rfc3339(),
-        );
+        self.indisponibilities.push(Indisponibility::new(
+            activity.interval.clone(),
+            IndisponibilityType::Activity(activity.activity.clone()),
+        ));
         self.timetable.add_time(
             activity.activity.clone(),
             if time <= 4i64 { 0.5f64 } else { 1.0f64 },
@@ -67,13 +73,7 @@ impl Display for Astek {
         writeln!(f, "Indisponibilities:")?;
         self.indisponibilities
             .iter()
-            .try_for_each(|indisponibility| {
-                writeln!(
-                    f,
-                    "\t- {} to {}",
-                    indisponibility.start, indisponibility.end
-                )
-            })?;
+            .try_for_each(|indisponibility| writeln!(f, "\t- {}", indisponibility))?;
         writeln!(f, "Assignations:")?;
         // self.assignations
         //     .iter()
