@@ -10,4 +10,6 @@ pub enum Activities {
 
 pub trait Activity {
     fn get_time(&self) -> DateTime<Local>;
+
+    fn get_location(&self) -> String;
 }
