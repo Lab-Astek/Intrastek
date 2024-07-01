@@ -5,7 +5,7 @@ use std::{
     rc::Rc,
 };
 
-use crate::{activity::Activity, astek::Astek};
+use crate::{activity::Activity, astek::astek::Astek};
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string};
 

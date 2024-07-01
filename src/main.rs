@@ -2,8 +2,8 @@
 
 use std::{cell::RefCell, rc::Rc};
 
+use crate::astek::astek::Astek;
 use activity::{Activities, Activity};
-use astek::Astek;
 use module::Module;
 use planner::Planner;
 
@@ -43,5 +43,5 @@ fn main() {
     println!("{}", planner);
     asteks
         .iter()
-        .for_each(|astek| print!("{}", astek.borrow()));
+        .for_each(|astek| println!("{}", astek.borrow()));
 }

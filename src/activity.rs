@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::module::Module;
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone, Hash, PartialEq, Eq)]
 pub enum Activities {
     FollowUp,
     Bootstrap,

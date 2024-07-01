@@ -5,17 +5,21 @@ use serde::{Deserialize, Serialize};
 
 use crate::activity::Activity;
 
+use super::timetable::Timetable;
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct Indisponibility {
     pub start: DateTime<FixedOffset>,
     pub end: DateTime<FixedOffset>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Astek {
     pub name: String,
     indisponibilities: Vec<Indisponibility>,
     assignations: Vec<Activity>,
+    #[serde(skip_deserializing, skip_serializing)]
+    timetable: Timetable,
 }
 
 impl Astek {
@@ -24,6 +28,7 @@ impl Astek {
             name: name.to_string(),
             indisponibilities: Vec::new(),
             assignations: Vec::new(),
+            timetable: Timetable::default(),
         }
     }
 
@@ -42,6 +47,10 @@ impl Astek {
 
     pub fn assign(&mut self, activity: Activity) {
         self.add_indisponibility(&activity.start.to_rfc3339(), &activity.end.to_rfc3339());
+        self.timetable.add_time(
+            activity.activity.clone(),
+            ((&activity.end.timestamp() - &activity.start.timestamp()) / 3600).into(),
+        );
         self.assignations.push(activity);
     }
 }
@@ -50,16 +59,19 @@ impl Display for Astek {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         writeln!(f, "{}:", self.name)?;
         writeln!(f, "Indisponibilities:")?;
-        self.indisponibilities.iter().try_for_each(|indisponibility| {
-            writeln!(
-                f,
-                "\t- {} to {}",
-                indisponibility.start, indisponibility.end
-            )
-        })?;
+        self.indisponibilities
+            .iter()
+            .try_for_each(|indisponibility| {
+                writeln!(
+                    f,
+                    "\t- {} to {}",
+                    indisponibility.start, indisponibility.end
+                )
+            })?;
         writeln!(f, "Assignations:")?;
         self.assignations
             .iter()
-            .try_for_each(|activity| writeln!(f, "\t- {}", activity))
+            .try_for_each(|activity| writeln!(f, "\t- {}", activity))?;
+        write!(f, "Time spent: {} hours", self.timetable.get_total_hours())
     }
 }
