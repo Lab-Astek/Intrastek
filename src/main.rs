@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use activity::{Activities, Activity};
-use chrono::Local;
+use astek::Astek;
 use planner::Planner;
 
 mod activity;
@@ -10,9 +10,20 @@ mod planner;
 
 fn main() {
     let mut planner = Planner::from_file("planner.json").unwrap_or(Planner::new());
+    let mut asteks: Vec<Astek> = Vec::new();
 
-    let activity = Activity::new(Local::now(), Activities::FollowUp, "Home", 2);
+    let activity = Activity::new(
+        "2024-07-01T10:59:31.130656344+02:00",
+        Activities::FollowUp,
+        "Home",
+        2,
+    );
     planner.add_activity(activity);
+    let mut astek = Astek::new("Alice");
+    astek.add_indisponibility(
+        "2024-07-01T10:59:31.130656344+02:00",
+        "2024-07-01T12:59:31.130656344+02:00",
+    );
 
-    planner.save_to_file("planner.json").unwrap();
+    asteks.push(astek);
 }
