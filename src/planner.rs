@@ -63,12 +63,10 @@ impl Planner {
         for i in 0..activity.needed_asteks {
             match available_asteks.get(i as usize) {
                 Some(astek) => {
-                    println!("Assigning {} to {}", astek.borrow(), activity);
                     astek.borrow_mut().assign(activity.clone());
                     activity.add_astek(astek.borrow().name.clone());
                 }
                 None => {
-                    println!("No astek available for {}", activity);
                     return Err("No astek available".to_string())?;
                 }
             }
@@ -76,9 +74,9 @@ impl Planner {
         Ok(())
     }
 
-    pub fn compute(&mut self, asteks: Vec<Rc<RefCell<Astek>>>) -> Result<(), String> {
+    pub fn compute(&mut self, asteks: &Vec<Rc<RefCell<Astek>>>) -> Result<(), String> {
         self.activities.iter_mut().try_for_each(|activity| {
-            let available_asteks = Planner::get_available_asteks(&asteks, activity);
+            let available_asteks = Planner::get_available_asteks(asteks, activity);
             Planner::pick_asteks(activity, available_asteks)
         })
     }

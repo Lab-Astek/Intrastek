@@ -48,6 +48,18 @@ impl Astek {
 
 impl Display for Astek {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.name)
+        writeln!(f, "{}:", self.name)?;
+        writeln!(f, "Indisponibilities:")?;
+        self.indisponibilities.iter().try_for_each(|indisponibility| {
+            writeln!(
+                f,
+                "\t- {} to {}",
+                indisponibility.start, indisponibility.end
+            )
+        })?;
+        writeln!(f, "Assignations:")?;
+        self.assignations
+            .iter()
+            .try_for_each(|activity| writeln!(f, "\t- {}", activity))
     }
 }

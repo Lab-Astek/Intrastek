@@ -39,6 +39,9 @@ fn main() {
     asteks.push(astek2);
     asteks.push(astek3);
 
-    let _ = planner.compute(asteks);
+    let _ = planner.compute(&asteks);
     println!("{}", planner);
+    asteks
+        .iter()
+        .for_each(|astek| print!("{}", astek.borrow()));
 }
