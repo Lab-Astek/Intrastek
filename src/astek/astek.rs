@@ -3,7 +3,7 @@ use std::fmt::{self, Display, Formatter};
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
-use crate::activity::Activity;
+use crate::activity::{Activities, Activity};
 
 use super::timetable::Timetable;
 
@@ -46,12 +46,21 @@ impl Astek {
     }
 
     pub fn assign(&mut self, activity: Activity) {
+        let time = (activity.end.timestamp() - activity.start.timestamp()) / 3600;
         self.add_indisponibility(&activity.start.to_rfc3339(), &activity.end.to_rfc3339());
         self.timetable.add_time(
             activity.activity.clone(),
-            ((&activity.end.timestamp() - &activity.start.timestamp()) / 3600).into(),
+            if time <= 4i64 { 0.5f64 } else { 1.0f64 },
         );
         self.assignations.push(activity);
+    }
+
+    pub fn get_time_spent_for_activity(&self, activity: Activities) -> f64 {
+        self.timetable
+            .count_per_activity
+            .get(&activity)
+            .copied()
+            .unwrap_or(0.0f64)
     }
 }
 
@@ -72,6 +81,10 @@ impl Display for Astek {
         self.assignations
             .iter()
             .try_for_each(|activity| writeln!(f, "\t- {}", activity))?;
-        write!(f, "Time spent: {} hours", self.timetable.get_total_hours())
+        write!(
+            f,
+            "{} assignations since start of the year",
+            self.timetable.get_total_assign()
+        )
     }
 }

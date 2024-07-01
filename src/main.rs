@@ -21,10 +21,19 @@ fn main() {
         Activities::FollowUp,
         "Home",
         "2024-07-01T12:59:31.130656344+02:00",
-        2,
-        Module::Cpe,
+        1,
+        Some(Module::Cpe),
+    );
+    let activity2 = Activity::new(
+        "2024-07-01T10:00:31.130656344+02:00",
+        Activities::Bootstrap,
+        "Home",
+        "2024-07-01T17:59:31.130656344+02:00",
+        1,
+        Some(Module::Psu),
     );
     planner.add_activity(activity);
+    planner.add_activity(activity2);
     let astek = Rc::new(RefCell::new(Astek::new("Alice")));
 
     astek.as_ref().borrow_mut().add_indisponibility(

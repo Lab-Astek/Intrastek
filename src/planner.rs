@@ -1,17 +1,37 @@
 use std::{
     cell::RefCell,
+    cmp::Ordering,
     fmt::{self, Display, Formatter},
     fs::{read_to_string, write},
     rc::Rc,
 };
 
-use crate::{activity::Activity, astek::astek::Astek};
+use crate::{
+    activity::{Activities, Activity},
+    astek::astek::Astek,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string};
 
 #[derive(Deserialize, Serialize)]
 pub struct Planner {
     activities: Vec<Activity>,
+}
+
+fn sort_asteks_by_time_on_activities(
+    asteks: &Vec<Rc<RefCell<Astek>>>,
+    activity: Activities,
+) -> Vec<Rc<RefCell<Astek>>> {
+    let mut asteks = asteks.clone();
+    asteks.sort_by(|a, b| {
+        let a = a.borrow().get_time_spent_for_activity(activity.clone());
+        let b = b.borrow().get_time_spent_for_activity(activity.clone());
+        match a.partial_cmp(&b) {
+            Some(order) => order,
+            None => Ordering::Equal,
+        }
+    });
+    asteks
 }
 
 impl Planner {

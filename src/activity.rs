@@ -12,6 +12,7 @@ pub enum Activities {
     Review,
     Keynote,
     Surveillance,
+    Permanence,
 }
 
 impl Display for Activities {
@@ -22,6 +23,7 @@ impl Display for Activities {
             Activities::Review => write!(f, "Review"),
             Activities::Keynote => write!(f, "Keynote"),
             Activities::Surveillance => write!(f, "Surveillance"),
+            Activities::Permanence => write!(f, "Permanence"),
         }
     }
 }
@@ -34,7 +36,7 @@ pub struct Activity {
     pub location: String,
     pub needed_asteks: u32,
     pub asteks_names: Vec<String>,
-    pub module: Module,
+    pub module: Option<Module>,
 }
 
 impl Activity {
@@ -44,7 +46,7 @@ impl Activity {
         location: &str,
         end: &str,
         needed_asteks: u32,
-        module: Module,
+        module: Option<Module>,
     ) -> Self {
         Activity {
             start: DateTime::parse_from_rfc3339(start).unwrap(),
@@ -64,7 +66,11 @@ impl Activity {
 
 impl Display for Activity {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        writeln!(f, "{} {}:", self.activity, self.module)?;
+        if let Some(module) = &self.module {
+            writeln!(f, "{} {}:", self.activity, module)?;
+        } else {
+            writeln!(f, "{}:", self.activity)?;
+        }
         writeln!(f, "\tAsteks:")?;
         if self.asteks_names.is_empty() {
             writeln!(f, "\t\t- None")?;
