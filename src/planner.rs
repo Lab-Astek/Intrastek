@@ -1,4 +1,8 @@
-use std::fs::{read_to_string, write};
+use std::{
+    cell::RefCell,
+    fs::{read_to_string, write},
+    rc::Rc,
+};
 
 use crate::{activity::Activity, astek::Astek};
 use serde::{Deserialize, Serialize};
@@ -32,16 +36,20 @@ impl Planner {
         self.activities.push(activity);
     }
 
-    fn get_available_asteks<'a>(
+    fn get_available_asteks(
         &self,
-        asteks: &'a Vec<Astek>,
+        asteks: &Vec<Rc<RefCell<Astek>>>,
         activity: Activity,
-    ) -> Vec<&'a Astek> {
-        let mut available_asteks: Vec<&Astek> = Vec::new();
+    ) -> Vec<Rc<RefCell<Astek>>> {
+        let mut available_asteks: Vec<Rc<RefCell<Astek>>> = Vec::new();
 
         asteks.iter().for_each(|astek| {
-            if astek.is_available(activity.start, activity.end) {
-                available_asteks.push(astek);
+            if astek
+                .as_ref()
+                .borrow()
+                .is_available(activity.start, activity.end)
+            {
+                available_asteks.push(astek.clone());
             }
         });
 
@@ -51,7 +59,7 @@ impl Planner {
     fn pick_asteks<'a>(
         &self,
         activity: &Activity,
-        available_asteks: Vec<&'a Astek>,
+        available_asteks: Vec<Rc<RefCell<Astek>>>,
     ) -> Result<(), String> {
         for i in 0..activity.needed_asteks {
             match available_asteks.get(i as usize) {
@@ -68,7 +76,7 @@ impl Planner {
         Ok(())
     }
 
-    pub fn compute(&mut self, asteks: Vec<Astek>) {
+    pub fn compute(&mut self, asteks: Vec<Rc<RefCell<Astek>>>) {
         self.activities.iter().for_each(|activity| {
             let available_asteks = self.get_available_asteks(&asteks, activity.clone());
             println!(
