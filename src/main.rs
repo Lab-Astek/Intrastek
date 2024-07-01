@@ -2,7 +2,7 @@
 
 use std::{cell::RefCell, rc::Rc};
 
-use crate::astek::astek::Astek;
+use crate::astek::Astek;
 use activity::{Activities, Activity};
 use module::Module;
 use planner::Planner;

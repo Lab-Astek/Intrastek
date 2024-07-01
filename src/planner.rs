@@ -8,7 +8,7 @@ use std::{
 
 use crate::{
     activity::{Activities, Activity},
-    astek::astek::Astek,
+    astek::Astek,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string};
@@ -19,10 +19,10 @@ pub struct Planner {
 }
 
 fn sort_asteks_by_time_on_activities(
-    asteks: &Vec<Rc<RefCell<Astek>>>,
+    asteks: &[Rc<RefCell<Astek>>],
     activity: Activities,
 ) -> Vec<Rc<RefCell<Astek>>> {
-    let mut asteks = asteks.clone();
+    let mut asteks = asteks.to_owned();
     asteks.sort_by(|a, b| {
         let a = a.borrow().get_time_spent_for_activity(activity.clone());
         let b = b.borrow().get_time_spent_for_activity(activity.clone());
@@ -58,7 +58,7 @@ impl Planner {
     }
 
     fn get_available_asteks(
-        asteks: &Vec<Rc<RefCell<Astek>>>,
+        asteks: &[Rc<RefCell<Astek>>],
         activity: &Activity,
     ) -> Vec<Rc<RefCell<Astek>>> {
         let mut available_asteks: Vec<Rc<RefCell<Astek>>> = Vec::new();
@@ -72,7 +72,7 @@ impl Planner {
         available_asteks
     }
 
-    fn pick_asteks<'a>(
+    fn pick_asteks(
         activity: &mut Activity,
         available_asteks: Vec<Rc<RefCell<Astek>>>,
     ) -> Result<(), String> {
@@ -90,7 +90,7 @@ impl Planner {
         Ok(())
     }
 
-    pub fn compute(&mut self, asteks: &Vec<Rc<RefCell<Astek>>>) -> Result<(), String> {
+    pub fn compute(&mut self, asteks: &[Rc<RefCell<Astek>>]) -> Result<(), String> {
         self.activities.iter_mut().try_for_each(|activity| {
             let available_asteks = Planner::get_available_asteks(asteks, activity);
             Planner::pick_asteks(activity, available_asteks)
