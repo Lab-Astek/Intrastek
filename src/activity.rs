@@ -5,11 +5,11 @@ pub enum Activities {
     Bootstrap,
     Review,
     Keynote,
-    Surveillance
+    Surveillance,
 }
 
-pub trait Activity {
-    fn get_time(&self) -> DateTime<Local>;
-
-    fn get_location(&self) -> String;
+pub struct Activity {
+    time: DateTime<Local>,
+    activity: Activities,
+    location: String,
 }
