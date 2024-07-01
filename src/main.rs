@@ -2,56 +2,64 @@
 
 use std::{cell::RefCell, rc::Rc};
 
-use crate::astek::Astek;
 use activity::{Activities, Activity};
+use astek::Astek;
 use module::Module;
 use planner::Planner;
 
 mod activity;
 mod astek;
+mod interval;
 mod module;
 mod planner;
-mod interval;
 
-fn main() {
-    let mut planner = Planner::from_file("planner.json").unwrap_or(Planner::new());
-    let mut asteks: Vec<Rc<RefCell<Astek>>> = Vec::new();
+fn create_test_planner() -> Planner {
+    let mut planner = Planner::new();
 
-    let activity = Activity::new(
-        "2024-07-01T10:59:31.130656344+02:00",
+    for i in 1..=5 {
+        let permanence = Activity::new(
+            format!("2024-07-0{}T10:00:00.000000000+02:00", i).as_str(),
+            Activities::Permanence,
+            "Lab",
+            format!("2024-07-0{}T18:00:00.000000000+02:00", i).as_str(),
+            4,
+            None,
+        );
+
+        planner.add_activity(permanence);
+    }
+
+    let fu_cpe = Activity::new(
+        "2024-07-06T10:00:00.000000000+02:00",
         Activities::FollowUp,
-        "Home",
-        "2024-07-01T12:59:31.130656344+02:00",
-        1,
+        "Grace Hopper",
+        "2024-07-06T18:00:00.000000000+02:00",
+        2,
         Some(Module::Cpe),
     );
-    let activity2 = Activity::new(
-        "2024-07-01T10:00:31.130656344+02:00",
-        Activities::Bootstrap,
-        "Home",
-        "2024-07-01T17:59:31.130656344+02:00",
-        1,
-        Some(Module::Psu),
-    );
-    planner.add_activity(activity);
-    planner.add_activity(activity2);
-    let astek = Rc::new(RefCell::new(Astek::new("Alice")));
 
-    astek.as_ref().borrow_mut().add_indisponibility(
-        "2024-07-01T10:59:31.130656344+02:00",
-        "2024-07-01T12:59:31.130656344+02:00",
-    );
+    planner.add_activity(fu_cpe);
+    planner
+}
 
-    let astek2 = Rc::new(RefCell::new(Astek::new("Bob")));
-    let astek3 = Rc::new(RefCell::new(Astek::new("Paul")));
+fn create_test_asteks() -> Vec<Rc<RefCell<Astek>>> {
+    let mut asteks = Vec::new();
 
-    asteks.push(astek);
-    asteks.push(astek2);
-    asteks.push(astek3);
+    for i in 0..20 {
+        let astek = Rc::new(RefCell::new(Astek::new(format!("Astek {}", i).as_str())));
 
+        asteks.push(astek);
+    }
+
+    asteks
+}
+
+fn main() {
+    let asteks = create_test_asteks();
+    let mut planner = create_test_planner();
     let _ = planner.compute(&asteks);
     println!("{}", planner);
-    asteks
-        .iter()
-        .for_each(|astek| println!("{}", astek.borrow()));
+    // asteks
+    //     .iter()
+    //     .for_each(|astek| println!("{}", astek.borrow()));
 }
