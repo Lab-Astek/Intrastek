@@ -1,3 +1,5 @@
+use std::fmt::{self, Display, Formatter};
+
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
@@ -39,6 +41,13 @@ impl Astek {
     }
 
     pub fn assign(&mut self, activity: Activity) {
+        self.add_indisponibility(&activity.start.to_rfc3339(), &activity.end.to_rfc3339());
         self.assignations.push(activity);
+    }
+}
+
+impl Display for Astek {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.name)
     }
 }

@@ -4,10 +4,12 @@ use std::{cell::RefCell, rc::Rc};
 
 use activity::{Activities, Activity};
 use astek::Astek;
+use module::Module;
 use planner::Planner;
 
 mod activity;
 mod astek;
+mod module;
 mod planner;
 
 fn main() {
@@ -20,6 +22,7 @@ fn main() {
         "Home",
         "2024-07-01T12:59:31.130656344+02:00",
         2,
+        Module::Cpe,
     );
     planner.add_activity(activity);
     let astek = Rc::new(RefCell::new(Astek::new("Alice")));
@@ -36,5 +39,6 @@ fn main() {
     asteks.push(astek2);
     asteks.push(astek3);
 
-    planner.compute(asteks);
+    let _ = planner.compute(asteks);
+    println!("{}", planner);
 }

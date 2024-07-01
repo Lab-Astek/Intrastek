@@ -1,5 +1,6 @@
 use std::{
     cell::RefCell,
+    fmt::{self, Display, Formatter},
     fs::{read_to_string, write},
     rc::Rc,
 };
@@ -37,9 +38,8 @@ impl Planner {
     }
 
     fn get_available_asteks(
-        &self,
         asteks: &Vec<Rc<RefCell<Astek>>>,
-        activity: Activity,
+        activity: &Activity,
     ) -> Vec<Rc<RefCell<Astek>>> {
         let mut available_asteks: Vec<Rc<RefCell<Astek>>> = Vec::new();
 
@@ -57,18 +57,18 @@ impl Planner {
     }
 
     fn pick_asteks<'a>(
-        &self,
-        activity: &Activity,
+        activity: &mut Activity,
         available_asteks: Vec<Rc<RefCell<Astek>>>,
     ) -> Result<(), String> {
         for i in 0..activity.needed_asteks {
             match available_asteks.get(i as usize) {
                 Some(astek) => {
-                    println!("Assigning {:?} to {:?}", activity, astek);
-                    // astek.assign(activity.clone());
+                    println!("Assigning {} to {}", astek.borrow(), activity);
+                    astek.borrow_mut().assign(activity.clone());
+                    activity.add_astek(astek.borrow().name.clone());
                 }
                 None => {
-                    println!("No astek available for {:?}", activity);
+                    println!("No astek available for {}", activity);
                     return Err("No astek available".to_string())?;
                 }
             }
@@ -76,14 +76,18 @@ impl Planner {
         Ok(())
     }
 
-    pub fn compute(&mut self, asteks: Vec<Rc<RefCell<Astek>>>) {
-        self.activities.iter().for_each(|activity| {
-            let available_asteks = self.get_available_asteks(&asteks, activity.clone());
-            println!(
-                "Available asteks for {:?}: {:?}",
-                activity, available_asteks
-            );
-            self.pick_asteks(activity, available_asteks).unwrap();
-        });
+    pub fn compute(&mut self, asteks: Vec<Rc<RefCell<Astek>>>) -> Result<(), String> {
+        self.activities.iter_mut().try_for_each(|activity| {
+            let available_asteks = Planner::get_available_asteks(&asteks, activity);
+            Planner::pick_asteks(activity, available_asteks)
+        })
+    }
+}
+
+impl Display for Planner {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.activities
+            .iter()
+            .try_for_each(|activity| write!(f, "{}", activity))
     }
 }
