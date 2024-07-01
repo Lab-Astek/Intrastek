@@ -12,22 +12,19 @@ pub enum Activities {
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Activity {
-    time: DateTime<FixedOffset>,
-    activity: Activities,
-    length: u32,
-    location: String,
+    pub start: DateTime<FixedOffset>,
+    pub activity: Activities,
+    pub end: DateTime<FixedOffset>,
+    pub location: String,
 }
 
 impl Activity {
-    pub fn new(time: &str, activity: Activities, location: &str, length: u32) -> Self {
-        if (length < 1) || (length > 8) {
-            panic!("Activity length must be between 1 and 8 hours");
-        }
+    pub fn new(start: &str, activity: Activities, location: &str, end: &str) -> Self {
         Activity {
-            time: DateTime::parse_from_rfc3339(time).unwrap(),
+            start: DateTime::parse_from_rfc3339(start).unwrap(),
             activity,
             location: location.to_string(),
-            length,
+            end: DateTime::parse_from_rfc3339(end).unwrap(),
         }
     }
 }

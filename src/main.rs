@@ -16,7 +16,7 @@ fn main() {
         "2024-07-01T10:59:31.130656344+02:00",
         Activities::FollowUp,
         "Home",
-        2,
+        "2024-07-01T12:59:31.130656344+02:00",
     );
     planner.add_activity(activity);
     let mut astek = Astek::new("Alice");
@@ -25,5 +25,10 @@ fn main() {
         "2024-07-01T12:59:31.130656344+02:00",
     );
 
+    let astek2 = Astek::new("Bob");
+
     asteks.push(astek);
+    asteks.push(astek2);
+
+    planner.compute(asteks);
 }

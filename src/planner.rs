@@ -1,6 +1,6 @@
 use std::fs::{read_to_string, write};
 
-use crate::activity::Activity;
+use crate::{activity::Activity, astek::Astek};
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string};
 
@@ -30,5 +30,18 @@ impl Planner {
 
     pub fn add_activity(&mut self, activity: Activity) {
         self.activities.push(activity);
+    }
+
+    pub fn compute(&self, asteks: Vec<Astek>) {
+        self.activities.iter().for_each(|activity| {
+            asteks.iter().for_each(|astek| {
+                if astek.is_available(activity.start, activity.end) {
+                    println!(
+                        "{} is available for {:?} at {}",
+                        astek.name, activity.activity, activity.location
+                    );
+                }
+            });
+        });
     }
 }
