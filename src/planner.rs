@@ -82,9 +82,20 @@ impl Planner {
                     astek.borrow_mut().assign(activity.clone());
                     activity.add_astek(astek.borrow().name.clone());
                 }
-                None => {
-                    return Err("No astek available".to_string())?;
-                }
+                None => match activity.module.clone() {
+                    Some(module) => {
+                        return Err(format!(
+                            "Not enough asteks for activity {} on module {}",
+                            activity.activity, module
+                        ))
+                    }
+                    None => {
+                        return Err(format!(
+                            "Not enough asteks for activity {}",
+                            activity.activity
+                        ))
+                    }
+                },
             }
         }
         Ok(())

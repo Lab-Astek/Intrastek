@@ -4,6 +4,8 @@ use std::{cell::RefCell, rc::Rc};
 
 use activity::{Activities, Activity};
 use astek::Astek;
+use env_logger::{Builder, Env};
+use log::error;
 use module::Module;
 use planner::Planner;
 
@@ -55,10 +57,16 @@ fn create_test_asteks() -> Vec<Rc<RefCell<Astek>>> {
 }
 
 fn main() {
+    let env = Env::new().filter("ASSIGN_LOG");
+    Builder::from_env(env).init();
+
     let asteks = create_test_asteks();
     let mut planner = create_test_planner();
-    let _ = planner.compute(&asteks);
-    println!("{}", planner);
+    match planner.compute(&asteks) {
+        Ok(_) => println!("Planner computed"),
+        Err(e) => error!("{}", e),
+    }
+    // println!("{}", planner);
     // asteks
     //     .iter()
     //     .for_each(|astek| println!("{}", astek.borrow()));

@@ -3,6 +3,7 @@ use std::fmt::{self, Display, Formatter};
 use serde::{Deserialize, Serialize};
 
 use crate::{interval::Interval, module::Module};
+use log::info;
 
 #[derive(Deserialize, Serialize, Debug, Clone, Hash, PartialEq, Eq)]
 pub enum Activities {
@@ -46,6 +47,10 @@ impl Activity {
         needed_asteks: u32,
         module: Option<Module>,
     ) -> Self {
+        info!(
+            "Creating activity: {} from {} to {} for module {:?}",
+            activity, start, end, module
+        );
         Activity {
             interval: Interval::new(start, end),
             activity,

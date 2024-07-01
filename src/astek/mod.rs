@@ -4,6 +4,7 @@ pub mod timetable;
 use std::fmt::{self, Display, Formatter};
 
 use indisponibility::{Indisponibility, IndisponibilityType};
+use log::info;
 use serde::{Deserialize, Serialize};
 use timetable::Timetable;
 
@@ -23,6 +24,7 @@ pub struct Astek {
 
 impl Astek {
     pub fn new(name: &str) -> Self {
+        info!("Creating astek: {}", name);
         Astek {
             name: name.to_string(),
             indisponibilities: Vec::new(),
