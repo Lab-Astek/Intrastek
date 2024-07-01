@@ -14,15 +14,20 @@ pub enum Activities {
 pub struct Activity {
     time: DateTime<Local>,
     activity: Activities,
+    length: u32,
     location: String,
 }
 
 impl Activity {
-    pub fn new(time: DateTime<Local>, activity: Activities, location: &str) -> Self {
+    pub fn new(time: DateTime<Local>, activity: Activities, location: &str, length: u32) -> Self {
+        if (length < 1) || (length > 8) {
+            panic!("Activity length must be between 1 and 8 hours");
+        }
         Activity {
             time,
             activity,
             location: location.to_string(),
+            length,
         }
     }
 }
