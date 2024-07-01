@@ -48,13 +48,34 @@ impl Planner {
         available_asteks
     }
 
-    pub fn compute(&self, asteks: Vec<Astek>) {
+    fn pick_asteks<'a>(
+        &self,
+        activity: &Activity,
+        available_asteks: Vec<&'a Astek>,
+    ) -> Result<(), String> {
+        for i in 0..activity.needed_asteks {
+            match available_asteks.get(i as usize) {
+                Some(astek) => {
+                    println!("Assigning {:?} to {:?}", activity, astek);
+                    // astek.assign(activity.clone());
+                }
+                None => {
+                    println!("No astek available for {:?}", activity);
+                    return Err("No astek available".to_string())?;
+                }
+            }
+        }
+        Ok(())
+    }
+
+    pub fn compute(&mut self, asteks: Vec<Astek>) {
         self.activities.iter().for_each(|activity| {
             let available_asteks = self.get_available_asteks(&asteks, activity.clone());
             println!(
                 "Available asteks for {:?}: {:?}",
                 activity, available_asteks
             );
+            self.pick_asteks(activity, available_asteks).unwrap();
         });
     }
 }

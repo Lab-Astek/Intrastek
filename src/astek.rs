@@ -1,6 +1,8 @@
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
+use crate::activity::Activity;
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct Indisponibility {
     pub start: DateTime<FixedOffset>,
@@ -11,6 +13,7 @@ struct Indisponibility {
 pub struct Astek {
     pub name: String,
     indisponibilities: Vec<Indisponibility>,
+    assignations: Vec<Activity>,
 }
 
 impl Astek {
@@ -18,6 +21,7 @@ impl Astek {
         Astek {
             name: name.to_string(),
             indisponibilities: Vec::new(),
+            assignations: Vec::new(),
         }
     }
 
@@ -32,5 +36,9 @@ impl Astek {
         self.indisponibilities
             .iter()
             .all(|indisponibility| start < indisponibility.start || end > indisponibility.end)
+    }
+
+    pub fn assign(&mut self, activity: Activity) {
+        self.assignations.push(activity);
     }
 }

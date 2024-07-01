@@ -16,15 +16,25 @@ pub struct Activity {
     pub activity: Activities,
     pub end: DateTime<FixedOffset>,
     pub location: String,
+    pub needed_asteks: u32,
+    pub asteks_names: Vec<String>,
 }
 
 impl Activity {
-    pub fn new(start: &str, activity: Activities, location: &str, end: &str) -> Self {
+    pub fn new(
+        start: &str,
+        activity: Activities,
+        location: &str,
+        end: &str,
+        needed_asteks: u32,
+    ) -> Self {
         Activity {
             start: DateTime::parse_from_rfc3339(start).unwrap(),
             activity,
             location: location.to_string(),
             end: DateTime::parse_from_rfc3339(end).unwrap(),
+            needed_asteks,
+            asteks_names: Vec::new(),
         }
     }
 }
