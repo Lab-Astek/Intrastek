@@ -8,6 +8,7 @@ use env_logger::{Builder, Env};
 use log::{error, info};
 use module::Module;
 use planner::Planner;
+use uuid::Uuid;
 
 mod activity;
 mod astek;
@@ -44,28 +45,31 @@ fn create_test_planner() -> Planner {
     planner
 }
 
-fn create_test_asteks() -> Vec<Rc<RefCell<Astek>>> {
+fn create_test_asteks() -> Result<Vec<Rc<RefCell<Astek>>>, String> {
     let mut asteks = Vec::new();
 
-    for i in 0..20 {
-        let astek = Rc::new(RefCell::new(Astek::new(format!("Astek {}", i).as_str())));
+    for _ in 0..20 {
+        let astek = Rc::new(RefCell::new(
+            Astek::new(Uuid::new_v4().to_string().as_str()).map_err(|e| e.to_string())?,
+        ));
 
         asteks.push(astek);
     }
 
-    asteks
+    Ok(asteks)
 }
 
-fn main() {
+fn main() -> Result<(), String> {
     let env = Env::new().filter("ASSIGN_LOG");
     Builder::from_env(env).init();
 
-    let asteks = create_test_asteks();
-    let mut planner = create_test_planner();
-    match planner.compute(&asteks) {
-        Ok(_) => (),
-        Err(e) => error!("{}", e),
-    }
-    println!("{}", planner);
+    let asteks = create_test_asteks()?;
+    // let mut planner = create_test_planner();
+    // match planner.compute(&asteks) {
+    //     Ok(_) => (),
+    //     Err(e) => error!("{}", e),
+    // }
+    // println!("{}", planner);
     asteks.iter().for_each(|astek| info!("{}", astek.borrow()));
+    Ok(())
 }

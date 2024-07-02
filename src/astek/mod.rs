@@ -7,6 +7,7 @@ use indisponibility::{Indisponibility, IndisponibilityType};
 use log::info;
 use serde::{Deserialize, Serialize};
 use timetable::Timetable;
+use uuid::Uuid;
 
 use crate::{
     activity::{Activities, Activity},
@@ -15,7 +16,7 @@ use crate::{
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Astek {
-    pub name: String,
+    pub id: Uuid,
     indisponibilities: Vec<Indisponibility>,
     assignations: Vec<Activity>,
     #[serde(skip_deserializing, skip_serializing)]
@@ -23,14 +24,14 @@ pub struct Astek {
 }
 
 impl Astek {
-    pub fn new(name: &str) -> Self {
-        info!("Creating astek: {}", name);
-        Astek {
-            name: name.to_string(),
+    pub fn new(id: &str) -> Result<Self, uuid::Error> {
+        info!("Creating astek: {}", id);
+        Ok(Astek {
+            id: Uuid::parse_str(id)?,
             indisponibilities: Vec::new(),
             assignations: Vec::new(),
             timetable: Timetable::default(),
-        }
+        })
     }
 
     pub fn add_indisponibility(&mut self, start: &str, end: &str) {
@@ -70,7 +71,7 @@ impl Astek {
 
 impl Display for Astek {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        writeln!(f, "{}:", self.name)?;
+        writeln!(f, "{}:", self.id)?;
         writeln!(f, "Indisponibilities:")?;
         self.indisponibilities
             .iter()

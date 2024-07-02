@@ -1,6 +1,7 @@
 use std::fmt::{self, Display, Formatter};
 
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::{interval::Interval, module::Module};
 use log::info;
@@ -34,7 +35,7 @@ pub struct Activity {
     pub interval: Interval,
     pub location: String,
     pub needed_asteks: u32,
-    pub asteks_names: Vec<String>,
+    pub asteks: Vec<Uuid>,
     pub module: Option<Module>,
 }
 
@@ -56,13 +57,13 @@ impl Activity {
             activity,
             location: location.to_string(),
             needed_asteks,
-            asteks_names: Vec::new(),
+            asteks: Vec::new(),
             module,
         }
     }
 
-    pub fn add_astek(&mut self, astek: String) {
-        self.asteks_names.push(astek);
+    pub fn add_astek(&mut self, astek: Uuid) {
+        self.asteks.push(astek);
     }
 }
 
@@ -75,10 +76,10 @@ impl Display for Activity {
         }
         writeln!(f, "\tDate: {}", self.interval.start.date_naive())?;
         writeln!(f, "\tAsteks:")?;
-        if self.asteks_names.is_empty() {
+        if self.asteks.is_empty() {
             writeln!(f, "\t\t- None")?;
         }
-        self.asteks_names
+        self.asteks
             .iter()
             .try_for_each(|astek| writeln!(f, "\t\t- {}", astek))
     }

@@ -84,7 +84,7 @@ impl Planner {
             match sorted.get(i as usize) {
                 Some(astek) => {
                     astek.borrow_mut().assign(activity.clone());
-                    activity.add_astek(astek.borrow().name.clone());
+                    activity.add_astek(astek.borrow().id.clone());
                 }
                 None => match activity.module.clone() {
                     Some(module) => {
