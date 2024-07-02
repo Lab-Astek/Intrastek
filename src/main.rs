@@ -1,17 +1,19 @@
 #![allow(dead_code)]
 
-use std::{cell::RefCell, rc::Rc};
-
 use activity::{Activities, Activity};
 use astek::Astek;
 use env_logger::{Builder, Env};
-use log::{error, info};
+use helpers::{request::Request, response::Response};
+use log::{info, warn};
 use module::Module;
 use planner::Planner;
+use rocket::{get, post, routes, serde::json::Json};
+use std::sync::{Arc, RwLock};
 use uuid::Uuid;
 
 mod activity;
 mod astek;
+mod helpers;
 mod interval;
 mod module;
 mod planner;
@@ -45,11 +47,11 @@ fn create_test_planner() -> Planner {
     planner
 }
 
-fn create_test_asteks() -> Result<Vec<Rc<RefCell<Astek>>>, String> {
+async fn create_test_asteks() -> Result<Vec<Arc<RwLock<Astek>>>, String> {
     let mut asteks = Vec::new();
 
     for _ in 0..20 {
-        let astek = Rc::new(RefCell::new(
+        let astek = Arc::new(RwLock::new(
             Astek::new(Uuid::new_v4().to_string().as_str()).map_err(|e| e.to_string())?,
         ));
 
@@ -59,17 +61,40 @@ fn create_test_asteks() -> Result<Vec<Rc<RefCell<Astek>>>, String> {
     Ok(asteks)
 }
 
-fn main() -> Result<(), String> {
+#[post("/register-astek", data = "<informations>")]
+async fn index(informations: Json<Request<Uuid>>) -> Json<Response<Uuid>> {
+    info!("{}", informations.0.data);
+    Json(informations.0.into())
+}
+
+#[get("/")]
+async fn echo() -> &'static str {
+    "Hello, world!"
+}
+
+//2fdfd8fe-59c0-4a93-9f3b-e0f75110bb1b
+
+#[rocket::main]
+async fn main() -> Result<(), String> {
     let env = Env::new().filter("ASSIGN_LOG");
     Builder::from_env(env).init();
 
-    let asteks = create_test_asteks()?;
+    let asteks = create_test_asteks().await?;
     // let mut planner = create_test_planner();
     // match planner.compute(&asteks) {
     //     Ok(_) => (),
     //     Err(e) => error!("{}", e),
     // }
     // println!("{}", planner);
-    asteks.iter().for_each(|astek| info!("{}", astek.borrow()));
+    asteks.iter().try_for_each(|astek| {
+        warn!("{}", astek.as_ref().read().map_err(|e| e.to_string())?);
+        Ok::<(), String>(())
+    })?;
+
+    rocket::build()
+        .mount("/", routes![index, echo])
+        .launch()
+        .await
+        .map_err(|e| e.to_string())?;
     Ok(())
 }
