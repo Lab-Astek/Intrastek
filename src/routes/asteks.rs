@@ -23,26 +23,50 @@ pub async fn register_asteks(
                 .iter()
                 .position(|a| a.as_ref().read().is_ok_and(|x| x.id == req.data))
             {
-                return Response::err(409, format!("{} already exists.", req.data));
+                return Response::err(409, format!("{} already exists", req.data));
             }
             mutex.asteks.push(astek.clone());
             Response::ok(200, "Ok")
         }
-        Err(_) => Response::err(500, String::from("Internal Error")),
+        Err(_) => Response::err(500, String::from("Internal error")),
     }
 }
 
 #[get("/asteks")]
-pub async fn get_asteks(
-    state: &State<Mutex<IntrastekState>>,
-) -> Response<Vec<Astek>, &'static str> {
+pub async fn get_asteks(state: &State<Mutex<IntrastekState>>) -> Response<Vec<Astek>, String> {
     let mut asteks: Vec<Astek> = Vec::new();
 
-    state.lock().unwrap().asteks.iter().for_each(|astk| {
-        if let Ok(astek) = astk.as_ref().read() {
-            asteks.push(astek.clone());
+    match state.lock() {
+        Ok(mutex) => {
+            mutex.asteks.iter().for_each(|astek| {
+                if let Ok(astek) = astek.as_ref().read() {
+                    asteks.push(astek.clone());
+                }
+            });
+            Response::ok(200, asteks)
         }
-    });
+        Err(_) => Response::err(500, String::from("Internal error")),
+    }
+}
 
-    Response::ok(200, asteks)
+#[get("/asteks/<id>")]
+pub async fn get_astek(id: Uuid, state: &State<Mutex<IntrastekState>>) -> Response<Astek, String> {
+    match state.lock() {
+        Ok(mutex) => {
+            if let Some(astek) = mutex
+                .asteks
+                .iter()
+                .find(|a| a.as_ref().read().is_ok_and(|x| x.id == id))
+            {
+                if let Ok(astek) = astek.as_ref().read() {
+                    Response::ok(200, astek.clone())
+                } else {
+                    Response::err(500, String::from("Internal error"))
+                }
+            } else {
+                Response::err(404, String::from("Ressource not found"))
+            }
+        }
+        Err(_) => Response::err(500, String::from("Internal error")),
+    }
 }

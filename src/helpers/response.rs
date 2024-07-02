@@ -5,6 +5,7 @@ use rocket::response::{self, Responder};
 use rocket::serde::json::Json;
 use serde::Serialize;
 
+#[derive(Debug)]
 pub struct Response<T, E> {
     pub code: u16,
     pub data: Result<Json<T>, Json<E>>,
