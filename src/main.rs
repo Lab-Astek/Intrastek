@@ -3,6 +3,7 @@
 use env_logger::{Builder, Env};
 use rocket::routes;
 use routes::{
+    activities::get_activities,
     asteks::{get_asteks, register_asteks},
     ping,
 };
@@ -24,7 +25,10 @@ async fn main() -> Result<(), String> {
     Builder::from_env(env).init();
 
     rocket::build()
-        .mount("/", routes![register_asteks, ping, get_asteks])
+        .mount(
+            "/",
+            routes![register_asteks, ping, get_asteks, get_activities],
+        )
         .manage(Mutex::new(IntrastekState::default()))
         .launch()
         .await

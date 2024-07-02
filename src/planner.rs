@@ -16,7 +16,7 @@ use serde_json::{from_str, to_string};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Planner {
-    activities: Vec<Activity>,
+    pub activities: Vec<Activity>,
 }
 
 fn sort_asteks_by_time_on_activities(
