@@ -3,7 +3,7 @@ use std::fmt::{self, Display, Formatter};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{interval::Interval, module::Module};
+use crate::{interval::Interval, module::Module, routes::activities::ActivityRequest};
 use log::info;
 
 #[derive(Deserialize, Serialize, Debug, Clone, Hash, PartialEq, Eq, Copy)]
@@ -31,39 +31,34 @@ impl Display for Activities {
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Activity {
+    pub id: Uuid,
     pub activity: Activities,
     pub interval: Interval,
     pub location: String,
     pub needed_asteks: u32,
-    pub asteks: Vec<Uuid>,
     pub module: Option<Module>,
+    pub asteks: Vec<Uuid>,
 }
 
 impl Activity {
-    pub fn new(
-        start: &str,
-        activity: Activities,
-        location: &str,
-        end: &str,
-        needed_asteks: u32,
-        module: Option<Module>,
-    ) -> Self {
-        info!(
-            "Creating activity: {} from {} to {} for module {:?}",
-            activity, start, end, module
-        );
-        Activity {
-            interval: Interval::new(start, end),
-            activity,
-            location: location.to_string(),
-            needed_asteks,
-            asteks: Vec::new(),
-            module,
-        }
-    }
-
     pub fn add_astek(&mut self, astek: Uuid) {
         self.asteks.push(astek);
+    }
+}
+
+impl From<ActivityRequest> for Activity {
+    fn from(value: ActivityRequest) -> Self {
+        let id = Uuid::new_v4();
+        info!("Creating activity with id: {}", id);
+        Activity {
+            id,
+            activity: value.activity,
+            interval: value.interval,
+            location: value.location,
+            needed_asteks: value.needed_asteks,
+            module: value.module,
+            asteks: Vec::new(),
+        }
     }
 }
 
