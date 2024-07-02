@@ -1,9 +1,6 @@
 #![allow(dead_code)]
 
-use activity::{Activities, Activity};
 use env_logger::{Builder, Env};
-use module::Module;
-use planner::Planner;
 use rocket::routes;
 use routes::{
     asteks::{get_asteks, register_asteks},
