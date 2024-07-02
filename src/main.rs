@@ -7,8 +7,9 @@ use helpers::{request::Request, response::Response};
 use log::{info, warn};
 use module::Module;
 use planner::Planner;
-use rocket::{get, post, routes, serde::json::Json};
-use std::sync::{Arc, RwLock};
+use rocket::{get, post, routes, serde::json::Json, State};
+use state::IntrastekState;
+use std::sync::{Arc, Mutex, RwLock};
 use uuid::Uuid;
 
 mod activity;
@@ -17,6 +18,7 @@ mod helpers;
 mod interval;
 mod module;
 mod planner;
+mod state;
 
 fn create_test_planner() -> Planner {
     let mut planner = Planner::new();
@@ -47,52 +49,30 @@ fn create_test_planner() -> Planner {
     planner
 }
 
-async fn create_test_asteks() -> Result<Vec<Arc<RwLock<Astek>>>, String> {
-    let mut asteks = Vec::new();
-
-    for _ in 0..20 {
-        let astek = Arc::new(RwLock::new(
-            Astek::new(Uuid::new_v4().to_string().as_str()).map_err(|e| e.to_string())?,
-        ));
-
-        asteks.push(astek);
-    }
-
-    Ok(asteks)
-}
-
 #[post("/register-astek", data = "<informations>")]
-async fn index(informations: Json<Request<Uuid>>) -> Json<Response<Uuid>> {
-    info!("{}", informations.0.data);
-    Json(informations.0.into())
+async fn register_asteks(
+    informations: Json<Request<Uuid>>,
+    state: &State<Mutex<IntrastekState>>,
+) -> Json<Response<()>> {
+    let astek = Arc::new(RwLock::new(Astek::new(informations.0.data).unwrap()));
+
+    state.lock().unwrap().asteks.push(astek.clone());
+    Json(Response { data: () })
 }
 
 #[get("/")]
-async fn echo() -> &'static str {
-    "Hello, world!"
+async fn ping(_state: &State<Mutex<IntrastekState>>) -> &'static str {
+    "pong"
 }
-
-//2fdfd8fe-59c0-4a93-9f3b-e0f75110bb1b
 
 #[rocket::main]
 async fn main() -> Result<(), String> {
     let env = Env::new().filter("ASSIGN_LOG");
     Builder::from_env(env).init();
 
-    let asteks = create_test_asteks().await?;
-    // let mut planner = create_test_planner();
-    // match planner.compute(&asteks) {
-    //     Ok(_) => (),
-    //     Err(e) => error!("{}", e),
-    // }
-    // println!("{}", planner);
-    asteks.iter().try_for_each(|astek| {
-        warn!("{}", astek.as_ref().read().map_err(|e| e.to_string())?);
-        Ok::<(), String>(())
-    })?;
-
     rocket::build()
-        .mount("/", routes![index, echo])
+        .mount("/", routes![register_asteks, ping])
+        .manage(Mutex::new(IntrastekState::default()))
         .launch()
         .await
         .map_err(|e| e.to_string())?;

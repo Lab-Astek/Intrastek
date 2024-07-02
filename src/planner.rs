@@ -14,7 +14,7 @@ use log::debug;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string};
 
-#[derive(Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Planner {
     activities: Vec<Activity>,
 }

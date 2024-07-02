@@ -24,10 +24,10 @@ pub struct Astek {
 }
 
 impl Astek {
-    pub fn new(id: &str) -> Result<Self, uuid::Error> {
+    pub fn new(id: Uuid) -> Result<Self, uuid::Error> {
         info!("Creating astek: {}", id);
         Ok(Astek {
-            id: Uuid::parse_str(id)?,
+            id,
             indisponibilities: Vec::new(),
             assignations: Vec::new(),
             timetable: Timetable::default(),
