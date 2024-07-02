@@ -1,4 +1,4 @@
-mod indisponibility;
+pub mod indisponibility;
 pub mod timetable;
 
 use std::fmt::{self, Display, Formatter};
@@ -34,11 +34,8 @@ impl Astek {
         })
     }
 
-    pub fn add_indisponibility(&mut self, start: &str, end: &str) {
-        self.indisponibilities.push(Indisponibility::new(
-            Interval::new(start, end),
-            IndisponibilityType::Private,
-        ));
+    pub fn add_indisponibility(&mut self, indisponibility: Indisponibility) {
+        self.indisponibilities.push(indisponibility);
     }
 
     pub fn is_available(&self, act_interval: &Interval) -> bool {

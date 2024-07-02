@@ -14,6 +14,7 @@ pub enum IndisponibilityType {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Indisponibility {
     interval: Interval,
+    #[serde(alias = "type")]
     tpe: IndisponibilityType,
 }
 

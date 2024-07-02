@@ -3,6 +3,19 @@
 version = 3
 
 [[package]]
+name = "IntrastekApi"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "env_logger",
+ "log",
+ "rocket",
+ "serde",
+ "serde_json",
+ "uuid",
+]
+
+[[package]]
 name = "addr2line"
 version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -88,19 +101,6 @@ checksum = "61a38449feb7068f52bb06c12759005cf459ee52bb4adc1d5a7c4322d716fb19"
 dependencies = [
  "anstyle",
  "windows-sys 0.52.0",
-]
-
-[[package]]
-name = "assign"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "env_logger",
- "log",
- "rocket",
- "serde",
- "serde_json",
- "uuid",
 ]
 
 [[package]]
