@@ -1,6 +1,8 @@
 "use client";
 import axios from "axios";
 import { useState } from "react";
+import { UUID } from "crypto";
+import { getAstek } from "./api/asteks";
 
 type Astek = {
   id: string;
@@ -8,33 +10,21 @@ type Astek = {
   assignations: any[];
 }
 
-const TEST_ID = "2fdfd8fe-59c0-4a93-9f3b-e0f75110bb1b";
+const TEST_ID: UUID = "2fdfd8fe-59c0-4a93-9f3b-e0f75110bb1b";
 
 function Astek() {
   let [result, setResult] = useState<Astek>({ id: "", indisponibilities: [], assignations: [] });
 
   function handleClick() {
-    try {
 
-      let config = {
-        method: 'get',
-        maxBodyLength: Infinity,
-        url: 'http://localhost:8000/asteks/2fdfd8fe-59c0-4a93-9f3b-e0f75110bb1b',
-        headers: {}
-      };
+    getAstek(TEST_ID)
+      .then((response) => {
+        setResult(response.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
 
-      axios.request(config)
-        .then((response) => {
-          console.log(JSON.stringify(response.data));
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-
-    }
-    catch (error) {
-      console.error(error);
-    }
   }
 
   return (
