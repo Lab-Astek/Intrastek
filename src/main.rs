@@ -9,6 +9,7 @@ mod activity;
 mod astek;
 mod helpers;
 mod interval;
+mod middlewares;
 mod module;
 mod planner;
 mod routes;

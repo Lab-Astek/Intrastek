@@ -1,4 +1,7 @@
+use std::fmt::{Debug, Display};
+
 use super::request::Request;
+use super::IntrastekErrors;
 use rocket::http::{ContentType, Status};
 use rocket::request;
 use rocket::response::{self, Responder};
@@ -49,5 +52,29 @@ where
         .status(Status::from_code(self.code).unwrap())
         .header(ContentType::JSON)
         .ok()
+    }
+}
+
+impl<T, E> From<Result<T, E>> for Response<T, String> {
+    fn from(result: Result<T, E>) -> Self {
+        match result {
+            Ok(data) => Response::ok(200, data),
+            Err(_) => Response::err(500, String::from("Internal error")),
+        }
+    }
+}
+
+impl<T> From<IntrastekErrors<T>> for Response<T, String>
+where
+    T: Display,
+{
+    fn from(value: IntrastekErrors<T>) -> Self {
+        match value {
+            IntrastekErrors::NotFound(id) => Response::err(404, format!("{} not found", id)),
+            IntrastekErrors::AlreadyExists(id) => {
+                Response::err(409, format!("{} already exists", id))
+            }
+            IntrastekErrors::InternalError => Response::err(500, String::from("Internal error")),
+        }
     }
 }

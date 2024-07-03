@@ -5,7 +5,8 @@ use uuid::Uuid;
 
 use crate::{
     astek::{indisponibility::Indisponibility, Astek},
-    helpers::{request::Request, response::Response},
+    helpers::{request::Request, response::Response, IntrastekErrors},
+    middlewares,
     state::IntrastekState,
 };
 
@@ -65,24 +66,7 @@ async fn get_asteks(state: &State<Mutex<IntrastekState>>) -> Response<Vec<Astek>
 
 #[get("/<id>")]
 async fn get_astek(id: Uuid, state: &State<Mutex<IntrastekState>>) -> Response<Astek, String> {
-    match state.lock() {
-        Ok(mutex) => {
-            if let Some(astek) = mutex
-                .asteks
-                .iter()
-                .find(|a| a.as_ref().read().is_ok_and(|x| x.id == id))
-            {
-                if let Ok(astek) = astek.as_ref().read() {
-                    Response::ok(200, astek.clone())
-                } else {
-                    Response::err(500, String::from("Internal error"))
-                }
-            } else {
-                Response::err(404, String::from("Ressource not found"))
-            }
-        }
-        Err(_) => Response::err(500, String::from("Internal error")),
-    }
+    middlewares::astek::get_astek(id, state).into()
 }
 
 #[post("/<id>", data = "<req>")]
@@ -91,26 +75,14 @@ async fn add_indisponibility(
     req: Json<Request<Indisponibility>>,
     state: &State<Mutex<IntrastekState>>,
 ) -> Response<usize, String> {
-    match state.lock() {
-        Ok(mutex) => {
-            if let Some(astek) = mutex
-                .asteks
-                .iter()
-                .find(|a| a.as_ref().read().is_ok_and(|x| x.id == id))
-            {
-                if let Ok(mut astek) = astek.as_ref().write() {
-                    let id = astek.add_indisponibility(req.data.clone());
-
-                    Response::ok(200, id)
-                } else {
-                    Response::err(500, String::from("Internal error"))
-                }
-            } else {
-                Response::err(404, String::from("Ressource not found"))
-            }
-        }
-        Err(_) => Response::err(500, String::from("Internal error")),
-    }
+    middlewares::astek::get_astek_and_then(id, state, |astek| {
+        astek
+            .as_ref()
+            .write()
+            .map(|mut a| a.add_indisponibility(req.data.clone()))
+            .map_err(|_| IntrastekErrors::InternalError)
+    })
+    .into()
 }
 
 #[delete("/<id>")]
