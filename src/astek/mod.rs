@@ -24,14 +24,14 @@ pub struct Astek {
 }
 
 impl Astek {
-    pub fn new(id: Uuid) -> Result<Self, uuid::Error> {
+    pub fn new(id: Uuid) -> Self {
         info!("Creating astek: {}", id);
-        Ok(Astek {
+        Astek {
             id,
             indisponibilities: Vec::new(),
             assignations: Vec::new(),
             timetable: Timetable::default(),
-        })
+        }
     }
 
     pub fn add_indisponibility(&mut self, indisponibility: Indisponibility) -> usize {

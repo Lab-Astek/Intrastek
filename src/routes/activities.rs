@@ -6,8 +6,9 @@ use uuid::Uuid;
 
 use crate::{
     activity::{Activities, Activity},
-    helpers::{request::Request, response::Response},
+    helpers::{request::Request, response::Response, IntrastekErrors},
     interval::Interval,
+    middlewares::{get_state, get_state_mut},
     module::Module,
     state::IntrastekState,
 };
@@ -21,10 +22,7 @@ pub fn load_activities(rocket: Rocket<Build>) -> Rocket<Build> {
 
 #[get("/")]
 async fn get_activities(state: &State<Mutex<IntrastekState>>) -> Response<Vec<Activity>, String> {
-    match state.lock() {
-        Ok(mutex) => Response::ok(200, mutex.planner.activities.clone()),
-        Err(_) => Response::err(500, String::from("Internal error")),
-    }
+    get_state(state, |mutex| Ok(mutex.planner.activities.clone())).into()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -41,14 +39,12 @@ async fn add_activity(
     activity: Json<Request<ActivityRequest>>,
     state: &State<Mutex<IntrastekState>>,
 ) -> Response<Uuid, String> {
-    match state.lock() {
-        Ok(mut mutex) => {
-            let act: Activity = activity.0.data.into();
-            mutex.planner.add_activity(act.clone());
-            Response::ok(200, act.id)
-        }
-        Err(_) => Response::err(500, String::from("Internal error")),
-    }
+    get_state_mut(state, |mutex| {
+        let act: Activity = activity.data.clone().into();
+        mutex.planner.add_activity(act.clone());
+        Ok(act.id)
+    })
+    .into()
 }
 
 #[get("/<id>")]
@@ -56,14 +52,12 @@ async fn get_activity(
     id: Uuid,
     state: &State<Mutex<IntrastekState>>,
 ) -> Response<Activity, String> {
-    match state.lock() {
-        Ok(mutex) => {
-            if let Some(activity) = mutex.planner.activities.iter().find(|a| a.id == id) {
-                Response::ok(200, activity.clone())
-            } else {
-                Response::err(404, String::from("Not found"))
-            }
+    get_state(state, |mutex| {
+        if let Some(activity) = mutex.planner.activities.iter().find(|a| a.id == id) {
+            Ok(activity.clone())
+        } else {
+            Err(IntrastekErrors::NotFound(id))
         }
-        Err(_) => Response::err(500, String::from("Internal error")),
-    }
+    })
+    .into()
 }

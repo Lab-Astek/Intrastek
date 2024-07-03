@@ -55,26 +55,32 @@ where
     }
 }
 
-impl<T, E> From<Result<T, E>> for Response<T, String> {
-    fn from(result: Result<T, E>) -> Self {
+impl<T, E> From<Result<T, IntrastekErrors<E>>> for Response<T, String>
+where
+    E: Display + Copy,
+{
+    fn from(result: Result<T, IntrastekErrors<E>>) -> Self {
         match result {
             Ok(data) => Response::ok(200, data),
-            Err(_) => Response::err(500, String::from("Internal error")),
+            Err(err) => Response::err(err.into(), err.into()),
         }
     }
 }
 
-impl<T> From<IntrastekErrors<T>> for Response<T, String>
+impl<T, E> From<IntrastekErrors<E>> for Response<T, String>
 where
-    T: Display,
+    E: Display + Copy,
 {
-    fn from(value: IntrastekErrors<T>) -> Self {
-        match value {
-            IntrastekErrors::NotFound(id) => Response::err(404, format!("{} not found", id)),
-            IntrastekErrors::AlreadyExists(id) => {
-                Response::err(409, format!("{} already exists", id))
-            }
-            IntrastekErrors::InternalError => Response::err(500, String::from("Internal error")),
+    fn from(value: IntrastekErrors<E>) -> Self {
+        Response::err(value.into(), value.into())
+    }
+}
+
+impl<E> From<Response<(), E>> for Response<&'static str, E> {
+    fn from(value: Response<(), E>) -> Self {
+        match value.data {
+            Ok(_) => Response::ok(value.code, "Ok"),
+            Err(data) => Response::err(value.code, data.into_inner()),
         }
     }
 }

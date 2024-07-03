@@ -3,7 +3,7 @@ use std::fmt::{self, Display, Formatter};
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Copy)]
 pub struct Interval {
     pub start: DateTime<FixedOffset>,
     pub end: DateTime<FixedOffset>,

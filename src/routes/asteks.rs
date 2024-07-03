@@ -6,7 +6,7 @@ use uuid::Uuid;
 use crate::{
     astek::{indisponibility::Indisponibility, Astek},
     helpers::{request::Request, response::Response, IntrastekErrors},
-    middlewares,
+    middlewares::{astek, get_state_mut},
     state::IntrastekState,
 };
 
@@ -29,44 +29,41 @@ async fn register_asteks(
     req: Json<Request<Uuid>>,
     state: &State<Mutex<IntrastekState>>,
 ) -> Response<&'static str, String> {
-    let astek = Arc::new(RwLock::new(Astek::new(req.0.data).unwrap()));
-
-    match state.lock() {
-        Ok(mut mutex) => {
-            if let Some(_) = mutex
-                .asteks
-                .iter()
-                .position(|a| a.as_ref().read().is_ok_and(|x| x.id == req.data))
-            {
-                return Response::err(409, format!("{} already exists", req.data));
-            }
-            mutex.asteks.push(astek.clone());
-            Response::ok(200, "Ok")
+    get_state_mut(state, |mutex| {
+        if let Some(_) = mutex
+            .asteks
+            .iter()
+            .position(|a| a.as_ref().read().is_ok_and(|x| x.id == req.data))
+        {
+            return Err(IntrastekErrors::AlreadyExists(req.data));
         }
-        Err(_) => Response::err(500, String::from("Internal error")),
-    }
+        mutex
+            .asteks
+            .push(Arc::new(RwLock::new(Astek::new(req.data))));
+        Ok("Ok")
+    })
+    .into()
 }
 
 #[get("/")]
 async fn get_asteks(state: &State<Mutex<IntrastekState>>) -> Response<Vec<Astek>, String> {
-    let mut asteks: Vec<Astek> = Vec::new();
-
-    match state.lock() {
-        Ok(mutex) => {
-            mutex.asteks.iter().for_each(|astek| {
-                if let Ok(astek) = astek.as_ref().read() {
-                    asteks.push(astek.clone());
-                }
-            });
-            Response::ok(200, asteks)
-        }
-        Err(_) => Response::err(500, String::from("Internal error")),
-    }
+    get_state_mut(state, |mutex| {
+        Ok(mutex
+            .asteks
+            .iter()
+            .map(|a| match a.as_ref().read() {
+                Ok(astek) => Ok(astek.clone()),
+                Err(_) => Err(IntrastekErrors::<Uuid>::InternalError),
+            })
+            .flatten()
+            .collect())
+    })
+    .into()
 }
 
 #[get("/<id>")]
 async fn get_astek(id: Uuid, state: &State<Mutex<IntrastekState>>) -> Response<Astek, String> {
-    middlewares::astek::get_astek(id, state).into()
+    astek::get_astek(id, state).into()
 }
 
 #[post("/<id>", data = "<req>")]
@@ -75,7 +72,7 @@ async fn add_indisponibility(
     req: Json<Request<Indisponibility>>,
     state: &State<Mutex<IntrastekState>>,
 ) -> Response<usize, String> {
-    middlewares::astek::get_astek_and_then(id, state, |astek| {
+    astek::get_astek_and_then(id, state, |astek| {
         astek
             .as_ref()
             .write()
