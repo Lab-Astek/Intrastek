@@ -1,16 +1,16 @@
 use std::{
-    cell::RefCell,
     cmp::Ordering,
     fmt::{self, Display, Formatter},
     fs::{read_to_string, write},
-    rc::Rc,
+    sync::{Arc, RwLock},
 };
 
 use crate::{
     activity::{Activities, Activity},
     astek::Astek,
+    helpers::{InternalError, IntrastekError},
+    module::Module,
 };
-use log::debug;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str, to_string};
 
@@ -20,23 +20,42 @@ pub struct Planner {
 }
 
 fn sort_asteks_by_time_on_activities(
-    asteks: &[Rc<RefCell<Astek>>],
+    asteks: &[Arc<RwLock<Astek>>],
     activity: Activities,
-) -> Vec<Rc<RefCell<Astek>>> {
+) -> Vec<Arc<RwLock<Astek>>> {
     let mut asteks = asteks.to_owned();
-    debug!("Pre sorting {:?}", asteks.clone());
     asteks.sort_by(|a, b| {
-        let a = a.borrow().get_time_spent_for_activity(activity.clone());
-        let b = b.borrow().get_time_spent_for_activity(activity.clone());
+        let a = a.read().unwrap().get_time_spent_for_activity(activity);
+        let b = b.read().unwrap().get_time_spent_for_activity(activity);
         match a.partial_cmp(&b) {
             Some(order) => order,
             None => Ordering::Equal,
         }
     });
-    debug!("Post sorting {:?}", asteks);
     asteks
 }
 
+#[derive(Debug, Clone)]
+struct MissingAsteksError {
+    activity: Activities,
+    module: Option<Module>,
+}
+
+impl IntrastekError for MissingAsteksError {
+    fn get_code(&self) -> u16 {
+        480
+    }
+
+    fn get_message(&self) -> String {
+        match self.module {
+            Some(module) => format!(
+                "Not enough asteks for activity {} on module {}",
+                self.activity, module
+            ),
+            None => format!("Not enough asteks for activity {}", self.activity),
+        }
+    }
+}
 impl Planner {
     pub fn new() -> Self {
         Planner {
@@ -61,54 +80,48 @@ impl Planner {
     }
 
     fn get_available_asteks(
-        asteks: &[Rc<RefCell<Astek>>],
+        asteks: &[Arc<RwLock<Astek>>],
         activity: &Activity,
-    ) -> Vec<Rc<RefCell<Astek>>> {
-        let mut available_asteks: Vec<Rc<RefCell<Astek>>> = Vec::new();
+    ) -> Result<Vec<Arc<RwLock<Astek>>>, Box<dyn IntrastekError>> {
+        let mut res = asteks.to_owned();
 
-        asteks.iter().for_each(|astek| {
-            if astek.as_ref().borrow().is_available(&activity.interval) {
-                available_asteks.push(astek.clone());
-            }
+        res.retain(|astek| match astek.as_ref().read() {
+            Ok(a) => a.is_available(&activity.interval),
+            Err(_) => false,
         });
 
-        available_asteks
+        Ok(res)
     }
 
     fn pick_asteks(
         activity: &mut Activity,
-        available_asteks: Vec<Rc<RefCell<Astek>>>,
-    ) -> Result<(), String> {
+        available_asteks: Vec<Arc<RwLock<Astek>>>,
+    ) -> Result<(), Box<dyn IntrastekError>> {
         let sorted = sort_asteks_by_time_on_activities(&available_asteks, activity.activity);
-        for i in 0..activity.needed_asteks {
-            match sorted.get(i as usize) {
-                Some(astek) => {
-                    astek.borrow_mut().assign(activity.clone());
-                    activity.add_astek(astek.borrow().id.clone());
+        (0..activity.needed_asteks).try_for_each(|i| match sorted.get(i as usize) {
+            Some(astek) => match astek.write() {
+                Ok(mut atk) => {
+                    atk.assign(activity.clone());
+                    activity.add_astek(atk.id);
+                    Ok(())
                 }
-                None => match activity.module.clone() {
-                    Some(module) => {
-                        return Err(format!(
-                            "Not enough asteks for activity {} on module {}",
-                            activity.activity, module
-                        ))
-                    }
-                    None => {
-                        return Err(format!(
-                            "Not enough asteks for activity {}",
-                            activity.activity
-                        ))
-                    }
-                },
-            }
-        }
-        Ok(())
+                Err(_) => Err::<(), Box<dyn IntrastekError>>(Box::new(InternalError)),
+            },
+            None => Err::<(), Box<dyn IntrastekError>>(Box::new(MissingAsteksError {
+                activity: activity.activity,
+                module: activity.module,
+            })),
+        })
     }
 
-    pub fn compute(&mut self, asteks: &[Rc<RefCell<Astek>>]) -> Result<(), String> {
+    pub fn compute(
+        &mut self,
+        asteks: &[Arc<RwLock<Astek>>],
+    ) -> Result<(), Box<dyn IntrastekError>> {
         self.activities.iter_mut().try_for_each(|activity| {
-            let available_asteks = Planner::get_available_asteks(asteks, activity);
-            Planner::pick_asteks(activity, available_asteks)
+            let available_asteks = Planner::get_available_asteks(asteks, activity)?;
+            Planner::pick_asteks(activity, available_asteks)?;
+            Ok(())
         })
     }
 }

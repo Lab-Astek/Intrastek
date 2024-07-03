@@ -1,7 +1,7 @@
-use std::fmt::{Debug, Display};
+use std::fmt::Debug;
 
 use super::request::Request;
-use super::IntrastekErrors;
+use super::IntrastekError;
 use rocket::http::{ContentType, Status};
 use rocket::request;
 use rocket::response::{self, Responder};
@@ -55,32 +55,11 @@ where
     }
 }
 
-impl<T, E> From<Result<T, IntrastekErrors<E>>> for Response<T, String>
-where
-    E: Display + Copy,
-{
-    fn from(result: Result<T, IntrastekErrors<E>>) -> Self {
-        match result {
+impl<T> From<Result<T, Box<dyn IntrastekError>>> for Response<T, String> {
+    fn from(value: Result<T, Box<dyn IntrastekError>>) -> Self {
+        match value {
             Ok(data) => Response::ok(200, data),
-            Err(err) => Response::err(err.into(), err.into()),
-        }
-    }
-}
-
-impl<T, E> From<IntrastekErrors<E>> for Response<T, String>
-where
-    E: Display + Copy,
-{
-    fn from(value: IntrastekErrors<E>) -> Self {
-        Response::err(value.into(), value.into())
-    }
-}
-
-impl<E> From<Response<(), E>> for Response<&'static str, E> {
-    fn from(value: Response<(), E>) -> Self {
-        match value.data {
-            Ok(_) => Response::ok(value.code, "Ok"),
-            Err(data) => Response::err(value.code, data.into_inner()),
+            Err(e) => Response::err(e.get_code(), e.get_message()),
         }
     }
 }

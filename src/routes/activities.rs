@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::{
     activity::{Activities, Activity},
-    helpers::{request::Request, response::Response, IntrastekErrors},
+    helpers::{request::Request, response::Response, InternalError},
     interval::Interval,
     middlewares::{get_state, get_state_mut},
     module::Module,
@@ -56,7 +56,7 @@ async fn get_activity(
         if let Some(activity) = mutex.planner.activities.iter().find(|a| a.id == id) {
             Ok(activity.clone())
         } else {
-            Err(IntrastekErrors::NotFound(id))
+            Err(Box::new(InternalError))
         }
     })
     .into()

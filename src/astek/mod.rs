@@ -48,11 +48,11 @@ impl Astek {
     pub fn assign(&mut self, activity: Activity) {
         let time = (activity.interval.end.timestamp() - activity.interval.start.timestamp()) / 3600;
         self.indisponibilities.push(Indisponibility::new(
-            activity.interval.clone(),
-            IndisponibilityType::Activity(activity.activity.clone()),
+            activity.interval,
+            IndisponibilityType::Activity(activity.activity),
         ));
         self.timetable.add_time(
-            activity.activity.clone(),
+            activity.activity,
             if time <= 4i64 { 0.5f64 } else { 1.0f64 },
         );
         self.assignations.push(activity);

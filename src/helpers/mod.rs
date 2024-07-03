@@ -1,41 +1,58 @@
 use std::fmt::Display;
 
-use uuid::Uuid;
-
 pub mod request;
 pub mod response;
 
-#[derive(Debug, Clone, Copy, Default)]
-pub enum IntrastekErrors<T: Copy = Uuid> {
-    NotFound(T),
-    AlreadyExists(T),
-    #[default]
-    InternalError,
+pub trait IntrastekError {
+    fn get_code(&self) -> u16;
+    fn get_message(&self) -> String;
 }
 
-impl<T> From<IntrastekErrors<T>> for String
+#[derive(Debug, Clone)]
+pub struct NotFound<T: Clone + Display> {
+    pub data: T,
+}
+
+impl<T> IntrastekError for NotFound<T>
 where
-    T: Display,
-    T: Copy,
+    T: Clone + Display,
 {
-    fn from(value: IntrastekErrors<T>) -> Self {
-        match value {
-            IntrastekErrors::NotFound(id) => format!("{} not found", id),
-            IntrastekErrors::AlreadyExists(id) => format!("{} already exists", id),
-            IntrastekErrors::InternalError => "Internal error".to_string(),
-        }
+    fn get_code(&self) -> u16 {
+        404
+    }
+
+    fn get_message(&self) -> String {
+        format!("{} not found", self.data)
     }
 }
 
-impl<T> From<IntrastekErrors<T>> for u16
+#[derive(Debug, Clone)]
+pub struct AlreadyExists<T: Clone + Display> {
+    pub data: T,
+}
+
+impl<T> IntrastekError for AlreadyExists<T>
 where
-    T: Copy,
+    T: Clone + Display,
 {
-    fn from(value: IntrastekErrors<T>) -> Self {
-        match value {
-            IntrastekErrors::NotFound(_) => 404,
-            IntrastekErrors::AlreadyExists(_) => 409,
-            IntrastekErrors::InternalError => 500,
-        }
+    fn get_code(&self) -> u16 {
+        409
+    }
+
+    fn get_message(&self) -> String {
+        format!("{} already exists", self.data)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct InternalError;
+
+impl IntrastekError for InternalError {
+    fn get_code(&self) -> u16 {
+        500
+    }
+
+    fn get_message(&self) -> String {
+        "Internal Error".to_string()
     }
 }

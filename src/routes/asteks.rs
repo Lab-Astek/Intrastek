@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 use crate::{
     astek::{indisponibility::Indisponibility, Astek},
-    helpers::{request::Request, response::Response, IntrastekErrors},
+    helpers::{request::Request, response::Response, AlreadyExists, InternalError},
     middlewares::{astek, get_state_mut},
     state::IntrastekState,
 };
@@ -30,12 +30,12 @@ async fn register_asteks(
     state: &State<Mutex<IntrastekState>>,
 ) -> Response<&'static str, String> {
     get_state_mut(state, |mutex| {
-        if let Some(_) = mutex
+        if mutex
             .asteks
             .iter()
-            .position(|a| a.as_ref().read().is_ok_and(|x| x.id == req.data))
+            .any(|a| a.as_ref().read().is_ok_and(|x| x.id == req.data))
         {
-            return Err(IntrastekErrors::AlreadyExists(req.data));
+            return Err(Box::new(AlreadyExists { data: req.data }));
         }
         mutex
             .asteks
@@ -51,11 +51,10 @@ async fn get_asteks(state: &State<Mutex<IntrastekState>>) -> Response<Vec<Astek>
         Ok(mutex
             .asteks
             .iter()
-            .map(|a| match a.as_ref().read() {
+            .flat_map(|a| match a.as_ref().read() {
                 Ok(astek) => Ok(astek.clone()),
-                Err(_) => Err(IntrastekErrors::<Uuid>::InternalError),
+                Err(_) => Err(Box::new(InternalError)),
             })
-            .flatten()
             .collect())
     })
     .into()
@@ -72,12 +71,9 @@ async fn add_indisponibility(
     req: Json<Request<Indisponibility>>,
     state: &State<Mutex<IntrastekState>>,
 ) -> Response<usize, String> {
-    astek::get_astek_and_then(id, state, |astek| {
-        astek
-            .as_ref()
-            .write()
-            .map(|mut a| a.add_indisponibility(req.data.clone()))
-            .map_err(|_| IntrastekErrors::InternalError)
+    astek::get_astek_and_then(id, state, |astek| match astek.as_ref().write() {
+        Ok(mut astk) => Ok(astk.add_indisponibility(req.data.clone())),
+        Err(_) => Err(Box::new(InternalError)),
     })
     .into()
 }
