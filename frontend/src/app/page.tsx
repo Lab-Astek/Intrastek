@@ -15,9 +15,22 @@ function Astek() {
 
   function handleClick() {
     try {
-      axios.get("http://localhost:8000/asteks/2fdfd8fe-59c0-4a93-9f3b-e0f75110bb1b").then((response) => {
-        setResult(response.data);
-      })
+
+      let config = {
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: 'http://localhost:8000/asteks/2fdfd8fe-59c0-4a93-9f3b-e0f75110bb1b',
+        headers: {}
+      };
+
+      axios.request(config)
+        .then((response) => {
+          console.log(JSON.stringify(response.data));
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
     }
     catch (error) {
       console.error(error);
