@@ -1,19 +1,13 @@
 "use client";
-import axios from "axios";
 import { useState } from "react";
-import { UUID } from "crypto";
-import { getAstek } from "./api/asteks";
-
-type Astek = {
-  id: string;
-  indisponibilities: any[];
-  assignations: any[];
-}
+import { UUID, randomUUID } from "crypto";
+import { getAstek } from "../api/asteks";
+import { Astek } from "../types/astek";
 
 const TEST_ID: UUID = "2fdfd8fe-59c0-4a93-9f3b-e0f75110bb1b";
 
-function Astek() {
-  let [result, setResult] = useState<Astek>({ id: "", indisponibilities: [], assignations: [] });
+function AstekButton() {
+  let [result, setResult] = useState<Astek>({ id: randomUUID(), indisponibilities: [], assignations: [] });
 
   function handleClick() {
 
@@ -38,7 +32,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <h1>Intrastek</h1>
-      <Astek />
+      <AstekButton />
     </main>
   );
 }

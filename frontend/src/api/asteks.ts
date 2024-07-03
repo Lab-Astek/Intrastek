@@ -12,3 +12,7 @@ export async function getAsteks() {
 export async function createAstek(id: UUID) {
     return request("POST", "asteks", id);
 }
+
+export async function addIndisponibility(id: UUID, indisponibility: any) {
+    return request("POST", `asteks/${id}`, indisponibility);
+}
