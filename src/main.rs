@@ -1,12 +1,7 @@
 #![allow(dead_code)]
 
 use env_logger::{Builder, Env};
-use rocket::routes;
-use routes::{
-    activities::get_activities,
-    asteks::{get_asteks, register_asteks},
-    ping,
-};
+use routes::init_router;
 use state::IntrastekState;
 use std::sync::Mutex;
 
@@ -24,11 +19,8 @@ async fn main() -> Result<(), String> {
     let env = Env::new().filter("ASSIGN_LOG");
     Builder::from_env(env).init();
 
-    rocket::build()
-        .mount(
-            "/",
-            routes![register_asteks, ping, get_asteks, get_activities],
-        )
+    let rocket = rocket::build();
+    init_router(rocket)
         .manage(Mutex::new(IntrastekState::default()))
         .launch()
         .await

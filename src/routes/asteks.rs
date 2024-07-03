@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex, RwLock};
 
-use rocket::{get, post, serde::json::Json, State};
+use rocket::{delete, get, post, routes, serde::json::Json, Build, Rocket, State};
 use uuid::Uuid;
 
 use crate::{
@@ -9,8 +9,22 @@ use crate::{
     state::IntrastekState,
 };
 
-#[post("/asteks", data = "<req>")]
-pub async fn register_asteks(
+pub fn load_asteks(rocket: Rocket<Build>) -> Rocket<Build> {
+    rocket.mount(
+        "/asteks",
+        routes![
+            register_asteks,
+            get_asteks,
+            get_astek,
+            add_indisponibility,
+            delete_astek,
+            delete_indisponibility
+        ],
+    )
+}
+
+#[post("/", data = "<req>")]
+async fn register_asteks(
     req: Json<Request<Uuid>>,
     state: &State<Mutex<IntrastekState>>,
 ) -> Response<&'static str, String> {
@@ -32,8 +46,8 @@ pub async fn register_asteks(
     }
 }
 
-#[get("/asteks")]
-pub async fn get_asteks(state: &State<Mutex<IntrastekState>>) -> Response<Vec<Astek>, String> {
+#[get("/")]
+async fn get_asteks(state: &State<Mutex<IntrastekState>>) -> Response<Vec<Astek>, String> {
     let mut asteks: Vec<Astek> = Vec::new();
 
     match state.lock() {
@@ -49,8 +63,8 @@ pub async fn get_asteks(state: &State<Mutex<IntrastekState>>) -> Response<Vec<As
     }
 }
 
-#[get("/asteks/<id>")]
-pub async fn get_astek(id: Uuid, state: &State<Mutex<IntrastekState>>) -> Response<Astek, String> {
+#[get("/<id>")]
+async fn get_astek(id: Uuid, state: &State<Mutex<IntrastekState>>) -> Response<Astek, String> {
     match state.lock() {
         Ok(mutex) => {
             if let Some(astek) = mutex
@@ -71,12 +85,12 @@ pub async fn get_astek(id: Uuid, state: &State<Mutex<IntrastekState>>) -> Respon
     }
 }
 
-#[post("/asteks/<id>", data = "<req>")]
-pub async fn add_indisponibility(
+#[post("/<id>", data = "<req>")]
+async fn add_indisponibility(
     id: Uuid,
     req: Json<Request<Indisponibility>>,
     state: &State<Mutex<IntrastekState>>,
-) -> Response<&'static str, String> {
+) -> Response<usize, String> {
     match state.lock() {
         Ok(mutex) => {
             if let Some(astek) = mutex
@@ -85,8 +99,9 @@ pub async fn add_indisponibility(
                 .find(|a| a.as_ref().read().is_ok_and(|x| x.id == id))
             {
                 if let Ok(mut astek) = astek.as_ref().write() {
-                    astek.add_indisponibility(req.data.clone());
-                    Response::ok(200, "Ok")
+                    let id = astek.add_indisponibility(req.data.clone());
+
+                    Response::ok(200, id)
                 } else {
                     Response::err(500, String::from("Internal error"))
                 }
@@ -95,5 +110,54 @@ pub async fn add_indisponibility(
             }
         }
         Err(_) => Response::err(500, String::from("Internal error")),
+    }
+}
+
+#[delete("/<id>")]
+async fn delete_astek(
+    id: Uuid,
+    state: &State<Mutex<IntrastekState>>,
+) -> Response<&'static str, String> {
+    match state.lock() {
+        Ok(mut mutex) => {
+            if let Some(pos) = mutex
+                .asteks
+                .iter()
+                .position(|a| a.as_ref().read().is_ok_and(|x| x.id == id))
+            {
+                mutex.asteks.remove(pos);
+                Response::ok(200, "Ok")
+            } else {
+                Response::err(404, String::from("Ressource not found"))
+            }
+        }
+        Err(_) => Response::err(500, String::from("Internal error")),
+    }
+}
+
+#[delete("/<id>/indisponibilities/<indisponibility_id>")]
+async fn delete_indisponibility(
+    id: Uuid,
+    indisponibility_id: usize,
+    state: &State<Mutex<IntrastekState>>,
+) -> Response<&'static str, &'static str> {
+    match state.lock() {
+        Ok(mutex) => {
+            if let Some(astek) = mutex
+                .asteks
+                .iter()
+                .find(|a| a.as_ref().read().is_ok_and(|x| x.id == id))
+            {
+                if let Ok(mut astek) = astek.as_ref().write() {
+                    astek.remove_indisponibility(indisponibility_id);
+                    Response::ok(200, "Ok")
+                } else {
+                    Response::err(500, "Internal error")
+                }
+            } else {
+                Response::err(404, "Ressource not found")
+            }
+        }
+        Err(_) => Response::err(500, "Internal error"),
     }
 }

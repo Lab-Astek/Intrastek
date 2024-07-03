@@ -34,8 +34,9 @@ impl Astek {
         })
     }
 
-    pub fn add_indisponibility(&mut self, indisponibility: Indisponibility) {
+    pub fn add_indisponibility(&mut self, indisponibility: Indisponibility) -> usize {
         self.indisponibilities.push(indisponibility);
+        self.indisponibilities.len() - 1
     }
 
     pub fn is_available(&self, act_interval: &Interval) -> bool {
@@ -63,6 +64,10 @@ impl Astek {
             .get(&activity)
             .copied()
             .unwrap_or(0.0f64)
+    }
+
+    pub fn remove_indisponibility(&mut self, idx: usize) {
+        self.indisponibilities.remove(idx);
     }
 }
 
