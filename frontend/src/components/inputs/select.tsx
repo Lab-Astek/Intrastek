@@ -1,28 +1,30 @@
-import * as React from 'react';
 import Box from '@mui/material/Box';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 
-export default function SelectInput({ children }: { children: any[] }) {
-    const [age, setAge] = React.useState('');
+import { FC } from 'react';
 
-    const handleChange = (event: SelectChangeEvent) => {
-        setAge(event.target.value as string);
-    };
 
+type SelectWrapperProp = {
+    value: any,
+    children: any[],
+    label: string,
+    onUpdate?: (arg0: SelectChangeEvent<HTMLInputElement>) => void | undefined
+};
+
+const SelectWrapper: FC<SelectWrapperProp> = ({ value, label, onUpdate, children }: SelectWrapperProp) => {
     return (
         <Box sx={{ minWidth: 120 }}>
             <FormControl fullWidth>
-                <InputLabel id="demo-simple-select-label" className="text-white">Age</InputLabel>
+                <InputLabel id="select-wrapper-input-label-id">{label}</InputLabel>
                 <Select
-                    labelId="demo-simple-select-label"
-                    id="select-input"
-                    value={age}
-                    label="Age"
-                    onChange={handleChange}
-                    className="text-white bg-blue"
+                    labelId="select-wrapper-input-label-id"
+                    id="select-wrapper-input"
+                    value={value}
+                    label={label}
+                    onChange={onUpdate}
                 >
                     {children.map((child, index) => <MenuItem key={index} value={index}>{child}</MenuItem>)}
                 </Select>
@@ -30,3 +32,5 @@ export default function SelectInput({ children }: { children: any[] }) {
         </Box>
     );
 }
+
+export default SelectWrapper;
