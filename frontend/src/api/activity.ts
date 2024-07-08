@@ -1,6 +1,7 @@
 import { ActivitiyType, ActivityRequest, Module } from "@/types/activity";
 import { post, get } from "./request";
 import { UUID } from "crypto";
+import { Interval } from "@/types/interval";
 
 function moduleFromString(module: string): Module  | undefined {
     switch (module) {
@@ -21,16 +22,11 @@ function moduleFromString(module: string): Module  | undefined {
     }
 }
 
-export async function createActivity(location: string, asteks: number, activityType: ActivitiyType, module: string) {
-    let end = new Date();
+export async function createActivity(location: string, asteks: number, activityType: ActivitiyType, module: string, interval: Interval) {
 
-    end.setHours(end.getHours() + 2);
     let data: ActivityRequest = {
         activity: activityType,
-        interval: {
-            start: new Date(),
-            end: end
-        },
+        interval: interval,
         location: location,
         needed_asteks: asteks,
         module: moduleFromString(module)
