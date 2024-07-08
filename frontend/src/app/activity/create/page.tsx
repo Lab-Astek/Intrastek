@@ -7,7 +7,9 @@ import Box from '@mui/material/Box';
 import { SelectChangeEvent } from '@mui/material/Select';
 import SelectWrapper from '@/components/inputs/select';
 import ButtonWrapper from '@/components/button';
-import createActivity from '@/api/activity';
+import { createActivity, getActivity } from '@/api/activity';
+import { UUID } from 'crypto';
+import { Astek } from '@/types/astek';
 
 const activities = [
   ActivitiyType.Permanence,
@@ -34,7 +36,7 @@ export default function Home() {
   let [activitiyTypeIdx, setActivityTypeIdx] = useState<number>(0);
   let [moduleIdx, setModuleIdx] = useState<number>(0);
 
-  let [result, setResult] = useState<Activity>();
+  let [result, setResult] = useState<Astek>();
 
   function handleChangeLocation(event: ChangeEvent<HTMLInputElement>) {
     setLocation(event.currentTarget.value)
@@ -75,7 +77,9 @@ export default function Home() {
   function handleSubmit() {
     console.log(location, asteks, activities[activitiyTypeIdx], modules[moduleIdx]);
     createActivity(location, asteks, activities[activitiyTypeIdx], modules[moduleIdx]).then((response) => {
-      setResult(response.data)
+      getActivity(response.data).then((resp) => {
+        setResult(resp.data)
+      })
     })
   }
 
