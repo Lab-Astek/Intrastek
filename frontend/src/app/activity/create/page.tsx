@@ -1,46 +1,40 @@
 "use client";
 
-import { FC, ChangeEvent, ReactElement, useState } from 'react'
-import FormControl from '@mui/material/FormControl';
-import { ActivitiyType } from '@/types/activity';
-import RadioWrapper from '@/components/inputs/radio'
+import { ChangeEvent, ReactElement, useState } from 'react'
+import { ActivitiyType, Activity } from '@/types/activity';
+import TextField from '@mui/material/TextField';
+import Box from '@mui/material/Box';
+import { SelectChangeEvent } from '@mui/material/Select';
+import SelectWrapper from '@/components/inputs/select';
+import ButtonWrapper from '@/components/button';
+import createActivity from '@/api/activity';
 
-type ActivityPickerProp = {
-  onUpdate?: (arg0: ChangeEvent<HTMLInputElement>) => void
-}
+const activities = [
+  ActivitiyType.Permanence,
+  ActivitiyType.FollowUp,
+  ActivitiyType.Bootstrap,
+  ActivitiyType.Keynote,
+  ActivitiyType.Review,
+  ActivitiyType.Surveillance
+];
 
-const ActivityPicker: FC<ActivityPickerProp> = ({onUpdate = undefined}): ReactElement => {
-  let activities = [
-    ActivitiyType.Permanence,
-    ActivitiyType.FollowUp,
-    ActivitiyType.Bootstrap,
-    ActivitiyType.Keynote,
-    ActivitiyType.Review,
-    ActivitiyType.Surveillance
-  ];
-
-  return (
-    <div className="activity-picker">
-      <FormControl>
-        <RadioWrapper defaultValue={activities[0]} name="activity" row onUpdate={onUpdate}>
-          {activities.map((s, idx) => s)}
-        </RadioWrapper>
-      </FormControl>
-    </div>
-  )
-}
+const modules = [
+  "Cpe",
+  "Psu",
+  "Mul",
+  "Mat",
+  "Web",
+  "Aia",
+  "None"
+];
 
 export default function Home() {
   let [location, setLocation] = useState<string>('');
   let [asteks, setAsteks] = useState<number>(0);
-  let [activitiyType, setActivityType] = useState<ActivitiyType>();
+  let [activitiyTypeIdx, setActivityTypeIdx] = useState<number>(0);
+  let [moduleIdx, setModuleIdx] = useState<number>(0);
 
-  async function onSubmit(event: ChangeEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    console.log(location)
-    console.log(asteks)
-  }
+  let [result, setResult] = useState<Activity>();
 
   function handleChangeLocation(event: ChangeEvent<HTMLInputElement>) {
     setLocation(event.currentTarget.value)
@@ -50,25 +44,63 @@ export default function Home() {
     setAsteks(parseInt(event.currentTarget.value))
   }
 
-  function onUpdateActivity(event: ChangeEvent<HTMLInputElement>) {
-    setActivityType(event.currentTarget.value as ActivitiyType)
+  function handleChangeActivityType(event: SelectChangeEvent<HTMLInputElement>) {
+    setActivityTypeIdx(parseInt(event.target.value as string))
   }
+
+  function handleChangeModule(event: SelectChangeEvent<HTMLInputElement>) {
+    setModuleIdx(parseInt(event.target.value as string))
+  }
+
+  const ActivityPicker = (): ReactElement => {
+    return (
+      <div className="activity-picker">
+        <SelectWrapper value={activitiyTypeIdx} label="Activity" onUpdate={handleChangeActivityType}>
+          {activities}
+        </SelectWrapper>
+      </div>
+    )
+  }
+
+  const ModulePicker = (): ReactElement => {
+    return (
+      <div className="module-picker">
+        <SelectWrapper value={moduleIdx} label="Module" onUpdate={handleChangeModule}>
+          {modules}
+        </SelectWrapper>
+      </div>
+    )
+  }
+
+  function handleSubmit() {
+    console.log(location, asteks, activities[activitiyTypeIdx], modules[moduleIdx]);
+    createActivity(location, asteks, activities[activitiyTypeIdx], modules[moduleIdx]).then((response) => {
+      setResult(response.data)
+    })
+  }
+
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-between p-24">
-      <form onSubmit={onSubmit}>
-        <label htmlFor="location">Location</label><br></br>
-        <input type="text" name="location" onChange={handleChangeLocation} /><br></br>
-
-        <label htmlFor="asteks">Asteks</label><br></br>
-        <input type="number" name="asteks" onChange={handleChangeAsteks} /><br></br>
-
-        <ActivityPicker onUpdate={onUpdateActivity}/>
-        <button type="submit">Submit</button>
-
+      <form noValidate autoComplete="off">
+        <Box
+          component="div"
+          sx={{
+            '& > :not(style)': { m: 1, width: '25ch' },
+          }}
+        >
+          <TextField label="Location" margin="dense" focused onChange={handleChangeLocation} />
+          <TextField defaultValue={0} type="number" label="Asteks" margin="dense" focused onChange={handleChangeAsteks} />
+        </Box>
         <br></br>
+        <ActivityPicker />
         <br></br>
-        <h2>{activitiyType}, {location}, {asteks}</h2>
+        <ModulePicker />
+        <br></br>
+        <ButtonWrapper onClick={handleSubmit}>
+          Create
+        </ButtonWrapper>
+        {JSON.stringify(result)}
       </form>
     </div>
   )
