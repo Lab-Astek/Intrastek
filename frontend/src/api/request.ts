@@ -23,5 +23,5 @@ export async function post(endpoint: string, data: any)
 
 export async function get(endpoint: string)
 {
-    return get( endpoint)
+    return request("GET", endpoint)
 }

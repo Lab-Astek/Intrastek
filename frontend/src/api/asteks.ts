@@ -2,7 +2,7 @@ import { UUID } from "crypto";
 import { post, get } from "./request";
 
 export async function getAstek(id: UUID) {
-    return get( `asteks/${id}`);
+    return get(`asteks/${id}`);
 }
 
 export async function getAsteks() {
