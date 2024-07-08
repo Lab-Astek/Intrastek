@@ -3,7 +3,7 @@ import { Interval } from "./interval";
 
 export type Activity = {
     id: UUID,
-    activity: ActivitiyType,
+    activity: ActivityType,
     interval: Interval,
     location: string,
     needed_asteks: number,
@@ -11,7 +11,7 @@ export type Activity = {
     asteks: UUID[]
 };
 
-export enum ActivitiyType {
+export enum ActivityType {
     FollowUp = "FollowUp",
     Bootstrap = "Bootstrap",
     Review = "Review",
@@ -30,7 +30,7 @@ export enum Module {
 }
 
 export type ActivityRequest = {
-    activity: ActivitiyType,
+    activity: ActivityType,
     interval: Interval,
     location: string,
     needed_asteks: number,

@@ -2,7 +2,7 @@
 
 import { FC, ChangeEvent, ReactElement, useState } from 'react'
 import FormControl from '@mui/material/FormControl';
-import { ActivitiyType } from '@/types/activity';
+import { ActivityType } from '@/types/activity';
 import RadioWrapper from '@/components/inputs/radio'
 
 type ActivityPickerProp = {
@@ -11,12 +11,12 @@ type ActivityPickerProp = {
 
 const ActivityPicker: FC<ActivityPickerProp> = ({onUpdate = undefined}): ReactElement => {
   let activities = [
-    ActivitiyType.Permanence,
-    ActivitiyType.FollowUp,
-    ActivitiyType.Bootstrap,
-    ActivitiyType.Keynote,
-    ActivitiyType.Review,
-    ActivitiyType.Surveillance
+    ActivityType.Permanence,
+    ActivityType.FollowUp,
+    ActivityType.Bootstrap,
+    ActivityType.Keynote,
+    ActivityType.Review,
+    ActivityType.Surveillance
   ];
 
   return (
@@ -33,7 +33,7 @@ const ActivityPicker: FC<ActivityPickerProp> = ({onUpdate = undefined}): ReactEl
 export default function Home() {
   let [location, setLocation] = useState<string>('');
   let [asteks, setAsteks] = useState<number>(0);
-  let [activitiyType, setActivityType] = useState<ActivitiyType>();
+  let [ActivityType, setActivityType] = useState<ActivityType>();
 
   async function onSubmit(event: ChangeEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -51,7 +51,7 @@ export default function Home() {
   }
 
   function onUpdateActivity(event: ChangeEvent<HTMLInputElement>) {
-    setActivityType(event.currentTarget.value as ActivitiyType)
+    setActivityType(event.currentTarget.value as ActivityType)
   }
 
   return (
@@ -68,7 +68,7 @@ export default function Home() {
 
         <br></br>
         <br></br>
-        <h2>{activitiyType}, {location}, {asteks}</h2>
+        <h2>{ActivityType}, {location}, {asteks}</h2>
       </form>
     </div>
   )
