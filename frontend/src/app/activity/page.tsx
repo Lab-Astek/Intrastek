@@ -7,14 +7,16 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import Avatar from '@mui/material/Avatar';
 import FolderIcon from '@mui/icons-material/Folder';
 import List from '@mui/material/List';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Home() {
     let [activitiesIds, setActivitiesIds] = useState<UUID[]>([]);
 
-    get("activities").then((response) => {
-        setActivitiesIds(response.data);
-    });
+    useEffect(() => {
+        get("activities").then((response) => {
+            setActivitiesIds(response.data);
+        });
+    }, []);
 
     return (
         <main className="flex min-h-screen flex-col items-center p-24">
@@ -23,11 +25,11 @@ export default function Home() {
                 {activitiesIds.map((id) => (
                     <ListItem>
                         <ButtonWrapper>
-                        <ListItemAvatar>
-                            <Avatar>
-                                <FolderIcon />
-                            </Avatar>
-                        </ListItemAvatar>
+                            <ListItemAvatar>
+                                <Avatar>
+                                    <FolderIcon />
+                                </Avatar>
+                            </ListItemAvatar>
                             <a href={`/activity/${id}`}>{id}</a>
                         </ButtonWrapper>
                     </ListItem>
