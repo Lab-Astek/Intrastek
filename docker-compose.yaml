@@ -4,11 +4,6 @@ services:
     restart: always
     ports:
       - 8000:8000
-    environment:
-      - REDIS_HOSTNAME=redis
-    networks:
-      - back-tier
-      - front-tier
 
   frontend:
     build: ./frontend
@@ -17,8 +12,6 @@ services:
       - 3000:3000
     environment:
       - API_PORT=8000
-    networks:
-      - front-tier
   # db:
   #   image: postgres:12-alpine
   #   restart: always
@@ -33,12 +26,6 @@ services:
   #     - POSTGRES_PASSWORD=password
   #     - POSTGRES_USER=postgres
 
-volumes:
-  db-data:
-    driver: local
-
-networks:
-  back-tier:
-    driver: bridge
-  front-tier:
-    driver: bridge
+# volumes:
+#   db-data:
+#     driver: local
