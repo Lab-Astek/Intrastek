@@ -34,21 +34,18 @@ async fn login_astek(
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LoginRequest {
-    pub email: String // change to client id for auth??
+    pub email: String, // change to client id for auth??
 }
 
 #[post("/", data = "<_email>")]
 async fn create_astek(
     _email: Json<Request<LoginRequest>>,
-    _state: &State<Mutex<IntrastekState>>
+    _state: &State<Mutex<IntrastekState>>,
 ) -> &'static str {
     "create astek"
 }
 
 #[get("/<_id>")]
-async fn get_login(
-    _id: Uuid,
-    _state: &State<Mutex<IntrastekState>>,
-) -> &'static str {
+async fn get_login(_id: Uuid, _state: &State<Mutex<IntrastekState>>) -> &'static str {
     "get login"
 }
