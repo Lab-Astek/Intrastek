@@ -1,5 +1,5 @@
-import { ActivitiyType, Activity, ActivityRequest, Module } from "@/types/activity";
-import request from "./request";
+import { ActivitiyType, ActivityRequest, Module } from "@/types/activity";
+import { post } from "./request";
 
 function moduleFromString(module: string): Module  | undefined {
     switch (module) {
@@ -35,5 +35,5 @@ export default async function createActivity(location: string, asteks: number, a
         module: moduleFromString(module)
     };
 
-    return request("POST", "activity", data).then()
+    return post("activities", data).then()
 }
