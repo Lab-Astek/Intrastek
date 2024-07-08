@@ -1,8 +1,7 @@
-FROM node:12-alpine
+FROM node:18
 WORKDIR /usr/src/frontend
-COPY package*.json /usr/src/frontend
+COPY package*.json ./
 RUN npm install
 COPY . .
-ENV PORT=80²
-EXPOSE 80
-CMD ["npm", "start"]
+EXPOSE 3000
+CMD ["npm", "run", "dev"]

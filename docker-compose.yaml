@@ -1,0 +1,44 @@
+services:
+  backend:
+    build: ./backend
+    restart: always
+    ports:
+      - 8000:8000
+    environment:
+      - REDIS_HOSTNAME=redis
+    networks:
+      - back-tier
+      - front-tier
+
+  frontend:
+    build: ./frontend
+    restart: always
+    ports:
+      - 3000:3000
+    environment:
+      - API_PORT=8000
+    networks:
+      - front-tier
+  # db:
+  #   image: postgres:12-alpine
+  #   restart: always
+  #   ports:
+  #     - "5433:5432"
+  #   networks:
+  #     - back-tier
+  #   volumes:
+  #     - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+  #     - db-data:/usr/share/db
+  #   environment:
+  #     - POSTGRES_PASSWORD=password
+  #     - POSTGRES_USER=postgres
+
+volumes:
+  db-data:
+    driver: local
+
+networks:
+  back-tier:
+    driver: bridge
+  front-tier:
+    driver: bridge
