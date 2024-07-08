@@ -21,8 +21,17 @@ pub fn load_activities(rocket: Rocket<Build>) -> Rocket<Build> {
 }
 
 #[get("/")]
-async fn get_activities(state: &State<Mutex<IntrastekState>>) -> Response<Vec<Activity>, String> {
-    get_state(state, |mutex| Ok(mutex.planner.activities.clone())).into()
+async fn get_activities(state: &State<Mutex<IntrastekState>>) -> Response<Vec<Uuid>, String> {
+    get_state(state, |mutex| {
+        Ok(mutex
+            .planner
+            .activities
+            .clone()
+            .iter()
+            .map(|a| a.id)
+            .collect())
+    })
+    .into()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

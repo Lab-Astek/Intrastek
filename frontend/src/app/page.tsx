@@ -43,11 +43,6 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <h1>Intrastek</h1>
       <ActivityCreationPageButton />
-      <SelectWrapper label="string" value={2}>
-        <p>Option 1</p>
-        <p>Option 2</p>
-        <p>Option 3</p>
-      </SelectWrapper >
     </main>
   );
 }
