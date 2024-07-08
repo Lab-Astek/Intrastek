@@ -9,9 +9,13 @@
         "lint": "next lint"
     },
     "dependencies": {
+        "@azure/msal-browser": "^3.18.0",
+        "@azure/msal-react": "^2.0.20",
         "@emotion/cache": "^11.11.0",
         "@emotion/react": "^11.11.4",
         "@emotion/styled": "^11.11.5",
+        "@mui/joy": "^5.0.0-beta.47",
+        "@mui/material": "^5.16.0",
         "@mui/material-nextjs": "^5.15.11",
         "axios": "^1.7.2",
         "next": "14.2.4",
