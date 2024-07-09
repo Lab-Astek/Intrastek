@@ -10,6 +10,17 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Bar from "@/components/bar";
+
+function valTranslate(value: any) {
+    if (typeof value === "object") {
+        if ("start" in value) {
+            return `${value.start} - ${value.end}`
+        }
+        return JSON.stringify(value)
+    }
+    return value.toString()
+}
 
 export default function Home({ params }: { params: { id: string } }) {
     let [activity, setActivity] = useState<Activity | undefined>(undefined);
@@ -25,41 +36,44 @@ export default function Home({ params }: { params: { id: string } }) {
         { id: 'value', label: 'value', minWidth: 100 }
     ]
 
-    const rows = Object.entries(activity || {}).map(([key, value]) => ({ key, value: value.toString() }))
+    const rows = Object.entries(activity || {}).map(([key, value]) => ({ key, value: valTranslate(value) }))
 
     return (
-        <main className="flex min-h-screen flex-col items-center justify-between p-24">
-            <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-                <TableContainer sx={{ maxHeight: 440 }}>
-                    <Table stickyHeader aria-label="sticky table">
-                        <TableHead>
-                            <TableRow>
-                                {columns.map((column) => (
-                                    <TableCell
-                                        key={column.id}
-                                        style={{ minWidth: column.minWidth }}
-                                    >
-                                        {column.label}
-                                    </TableCell>
-                                ))}
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {rows.map((row) => {
-                                return <TableRow
-                                    key={row.key}
-                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                >
-                                    <TableCell component="th" scope="row">
-                                        {row.key}
-                                    </TableCell>
-                                    <TableCell>{row.value}</TableCell>
+        <div>
+            <Bar title="Activity infos" />
+            <main className="flex min-h-screen flex-col items-center justify-between p-24">
+                <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+                    <TableContainer sx={{ maxHeight: 440 }}>
+                        <Table stickyHeader aria-label="sticky table">
+                            <TableHead>
+                                <TableRow>
+                                    {columns.map((column) => (
+                                        <TableCell
+                                            key={column.id}
+                                            style={{ minWidth: column.minWidth }}
+                                        >
+                                            {column.label}
+                                        </TableCell>
+                                    ))}
                                 </TableRow>
-                            })}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Paper>
-        </main>
+                            </TableHead>
+                            <TableBody>
+                                {rows.map((row) => {
+                                    return <TableRow
+                                        key={row.key}
+                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                    >
+                                        <TableCell component="th" scope="row">
+                                            {row.key}
+                                        </TableCell>
+                                        <TableCell>{row.value}</TableCell>
+                                    </TableRow>
+                                })}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Paper>
+            </main>
+        </div>
     );
 }
