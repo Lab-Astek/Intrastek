@@ -32,7 +32,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-  ],
+, "src/app/activity/[id].tsx"  ],
   "exclude": [
     "node_modules"
   ]

@@ -1,15 +1,18 @@
 "use client";
 
-import { ChangeEvent, ReactElement, useState } from 'react'
-import { ActivityType, Activity } from '@/types/activity';
-import TextField from '@mui/material/TextField';
-import Box from '@mui/material/Box';
-import { SelectChangeEvent } from '@mui/material/Select';
-import SelectWrapper from '@/components/inputs/select';
-import ButtonWrapper from '@/components/button';
-import { createActivity, getActivity } from '@/api/activity';
-import { UUID } from 'crypto';
-import { Astek } from '@/types/astek';
+import { ChangeEvent, ReactElement, useState } from "react";
+import { ActivityType } from "@/types/activity";
+import TextField from "@mui/material/TextField";
+import Box from "@mui/material/Box";
+import { SelectChangeEvent } from "@mui/material/Select";
+import SelectWrapper from "@/components/inputs/select";
+import ButtonWrapper from "@/components/button";
+import { createActivity, getActivity } from "@/api/activity";
+import { Astek } from "@/types/astek";
+import Stack from "@mui/material/Stack";
+import DatePicker from "@/components/inputs/datePicker";
+import Bar from "@/components/bar";
+import Page from "@/components/page";
 
 const activities = [
   ActivityType.Permanence,
@@ -17,95 +20,124 @@ const activities = [
   ActivityType.Bootstrap,
   ActivityType.Keynote,
   ActivityType.Review,
-  ActivityType.Surveillance
+  ActivityType.Surveillance,
 ];
 
-const modules = [
-  "Cpe",
-  "Psu",
-  "Mul",
-  "Mat",
-  "Web",
-  "Aia",
-  "None"
-];
+const modules = ["Cpe", "Psu", "Mul", "Mat", "Web", "Aia", "None"];
 
 export default function Home() {
-  let [location, setLocation] = useState<string>('');
+  let [name, setName] = useState<string>("");
   let [asteks, setAsteks] = useState<number>(0);
   let [ActivityTypeIdx, setActivityTypeIdx] = useState<number>(0);
   let [moduleIdx, setModuleIdx] = useState<number>(0);
+  let [startDate, setStartDate] = useState<Date>();
+  let [endDate, setEndDate] = useState<Date>();
 
   let [result, setResult] = useState<Astek>();
 
-  function handleChangeLocation(event: ChangeEvent<HTMLInputElement>) {
-    setLocation(event.currentTarget.value)
+  function handleChangeName(event: ChangeEvent<HTMLInputElement>) {
+    setName(event.currentTarget.value);
   }
 
   function handleChangeAsteks(event: ChangeEvent<HTMLInputElement>) {
-    setAsteks(parseInt(event.currentTarget.value))
+    setAsteks(parseInt(event.currentTarget.value));
   }
 
-  function handleChangeActivityType(event: SelectChangeEvent<HTMLInputElement>) {
-    setActivityTypeIdx(parseInt(event.target.value as string))
+  function handleChangeActivityType(
+    event: SelectChangeEvent<HTMLInputElement>,
+  ) {
+    setActivityTypeIdx(parseInt(event.target.value as string));
   }
 
   function handleChangeModule(event: SelectChangeEvent<HTMLInputElement>) {
-    setModuleIdx(parseInt(event.target.value as string))
+    setModuleIdx(parseInt(event.target.value as string));
   }
 
   const ActivityPicker = (): ReactElement => {
     return (
       <div className="activity-picker">
-        <SelectWrapper value={ActivityTypeIdx} label="Activity" onUpdate={handleChangeActivityType}>
+        <SelectWrapper
+          value={activityTypeIdx}
+          label="Activity"
+          onUpdate={handleChangeActivityType}
+        >
           {activities}
         </SelectWrapper>
       </div>
-    )
-  }
+    );
+  };
 
   const ModulePicker = (): ReactElement => {
     return (
       <div className="module-picker">
-        <SelectWrapper value={moduleIdx} label="Module" onUpdate={handleChangeModule}>
+        <SelectWrapper
+          value={moduleIdx}
+          label="Module"
+          onUpdate={handleChangeModule}
+        >
           {modules}
         </SelectWrapper>
       </div>
-    )
-  }
+    );
+  };
 
   function handleSubmit() {
-    console.log(location, asteks, activities[ActivityTypeIdx], modules[moduleIdx]);
-    createActivity(location, asteks, activities[ActivityTypeIdx], modules[moduleIdx]).then((response) => {
-      getActivity(response.data).then((resp) => {
-        setResult(resp.data)
-      })
-    })
+    if (startDate === undefined || endDate === undefined) return;
+    createActivity(
+      name,
+      asteks,
+      activities[activityTypeIdx],
+      modules[moduleIdx],
+      { start: startDate, end: endDate },
+    );
   }
 
-
   return (
-    <div className="flex min-h-screen flex-col items-center justify-between p-24">
+    <Page title="Activity creation">
       <form noValidate autoComplete="off">
-        <Box
-          component="div"
-          sx={{
-            '& > :not(style)': { m: 1, width: '25ch' },
-          }}
-        >
-          <TextField label="Location" margin="dense" focused onChange={handleChangeLocation} />
-          <TextField defaultValue={0} type="number" label="Asteks" margin="dense" focused onChange={handleChangeAsteks} />
-        </Box>
-        <br></br>
-        <ActivityPicker />
-        <br></br>
-        <ModulePicker />
-        <br></br>
-        <ButtonWrapper onClick={handleSubmit}>
-          Create
-        </ButtonWrapper>
-        {JSON.stringify(result)}
+        <Stack spacing={3}>
+          <Box
+            component="div"
+            sx={{
+              "& > :not(style)": { m: 1, width: "25ch" },
+            }}
+          >
+            <TextField
+              label="Name"
+              margin="dense"
+              focused
+              onChange={handleChangeName}
+            />
+            <TextField
+              defaultValue={0}
+              type="number"
+              label="Asteks"
+              margin="dense"
+              focused
+              onChange={handleChangeAsteks}
+            />
+          </Box>
+          <ActivityPicker />
+          <ModulePicker />
+          <DatePicker
+            label="Start"
+            onChange={(value, ctx) => {
+              if (value) {
+                setStartDate(value.toDate());
+              }
+            }}
+          />
+          <DatePicker
+            label="End"
+            onChange={(value, ctx) => {
+              if (value) {
+                setEndDate(value.toDate());
+              }
+            }}
+          />
+          <ButtonWrapper onClick={handleSubmit}>Create</ButtonWrapper>
+        </Stack>
       </form>
-    </div>
-  )
+    </Page>
+  );
 }

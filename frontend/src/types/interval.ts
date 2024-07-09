@@ -1,4 +1,4 @@
 export type Interval = {
-    start: Date;
-    end: Date;
+  start: Date;
+  end: Date;
 };

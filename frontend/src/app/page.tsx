@@ -4,21 +4,28 @@ import { UUID, randomUUID } from "crypto";
 import { getAstek } from "../api/asteks";
 import { Astek } from "../types/astek";
 import ButtonWrapper from "@/components/button";
+<<<<<<< HEAD
 import SelectWrapper from "@/components/inputs/select";
 import { MsalProvider, useMsal } from "@azure/msal-react";
 import { loginRequest } from "../authConfig";
 import { PublicClientApplication } from "@azure/msal-browser";
 import { msalConfig } from "../authConfig";
 import { log_auth } from "../api/request"
+=======
+import Page from "@/components/page";
+>>>>>>> master
 
 const TEST_ID: UUID = "2fdfd8fe-59c0-4a93-9f3b-e0f75110bb1b";
 const MSAL_INSTANCE = new PublicClientApplication(msalConfig);
 
 function AstekButton() {
-  let [result, setResult] = useState<Astek>({ id: randomUUID(), indisponibilities: [], assignations: [] });
+  let [result, setResult] = useState<Astek>({
+    id: randomUUID(),
+    indisponibilities: [],
+    assignations: [],
+  });
 
   function handleClick() {
-
     getAstek(TEST_ID)
       .then((response) => {
         setResult(response.data);
@@ -26,14 +33,9 @@ function AstekButton() {
       .catch((error) => {
         console.log(error);
       });
-
   }
 
-  return (
-    <button onClick={handleClick}>
-      Click me {result.id}
-    </button>
-  );
+  return <button onClick={handleClick}>Click me {result.id}</button>;
 }
 
 function ActivityCreationPageButton() {
@@ -88,3 +90,7 @@ export default function Home() {
     </MsalProvider>
   );
 }
+
+// export default function Home() {
+//   return <Page title="Intrastek">{/* <ActivityCreationPageButton /> */}</Page>;
+// }
