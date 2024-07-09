@@ -11,7 +11,7 @@ type BarProps = {
 
 const Bar: FC<BarProps> = ({ title }): ReactElement => {
     return <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static">
+        <AppBar position="static" sx={{ bgcolor: '#cc0000' }}>
             <ToolBar>
                 <Typography variant="h6" component="div">
                     {title}
