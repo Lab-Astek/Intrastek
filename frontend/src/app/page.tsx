@@ -5,6 +5,7 @@ import { getAstek } from "../api/asteks";
 import { Astek } from "../types/astek";
 import ButtonWrapper from "@/components/button";
 import Page from "@/components/page";
+import EventCalendar from "@/components/calendar/EventCalendar";
 
 const TEST_ID: UUID = "2fdfd8fe-59c0-4a93-9f3b-e0f75110bb1b";
 
@@ -37,5 +38,11 @@ function ActivityCreationPageButton() {
 }
 
 export default function Home() {
-  return <Page title="Intrastek">{/* <ActivityCreationPageButton /> */}</Page>;
+  return (
+    <div>
+      <Page title="Intrastek">
+        <EventCalendar />
+      </Page>
+    </div>
+  );
 }
