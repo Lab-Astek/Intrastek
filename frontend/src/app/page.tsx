@@ -9,6 +9,7 @@ import { MsalProvider, useMsal } from "@azure/msal-react";
 import { loginRequest } from "../authConfig";
 import { PublicClientApplication } from "@azure/msal-browser";
 import { msalConfig } from "../authConfig";
+import { log_auth } from "../api/request"
 
 const TEST_ID: UUID = "2fdfd8fe-59c0-4a93-9f3b-e0f75110bb1b";
 const MSAL_INSTANCE = new PublicClientApplication(msalConfig);
@@ -47,9 +48,21 @@ function LoginAstekButton() {
   const { instance } = useMsal();
 
   function handleLogin() {
-    instance.loginPopup(loginRequest).catch(e => {
+    instance.loginPopup(loginRequest).then(response => {
+      sendTokenToBackend(response.accessToken);
+    }).catch(e => {
       console.error(e);
     });
+  }
+
+  async function sendTokenToBackend(token: string) {
+    try {
+      console.log("Sending token to backend...");
+      const response = await log_auth("POST", 'asteks', token);
+      console.log('Success:', response.data);
+    } catch (error) {
+      console.error('Error:', error);
+    }
   }
 
   return (

@@ -16,12 +16,27 @@ async function request(method: string, endpoint: string, data: any = {}) {
     return axios.request(config);
 }
 
-export async function post(endpoint: string, data: any)
+export async function log_auth(method: string, endpoint: string, token: string)
 {
-    return request("POST", endpoint, {data: data})
+    let config = {
+        method: method,
+        maxBodyLength: Infinity,
+        url: `${API_URL}:${API_PORT}/${endpoint}`,
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept'       : 'application/json'
+        }
+    };
+
+    return axios.request(config);
 }
 
 export async function get(endpoint: string)
 {
     return request("GET", endpoint)
+}
+
+export async function post(endpoint: string, data: any = {})
+{
+    return request("POST", endpoint, data)
 }
