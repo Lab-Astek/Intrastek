@@ -11,6 +11,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Bar from "@/components/bar";
+import Page from "@/components/page";
 
 function valTranslate(value: any) {
     if (typeof value === "object") {
@@ -39,41 +40,38 @@ export default function Home({ params }: { params: { id: string } }) {
     const rows = Object.entries(activity || {}).map(([key, value]) => ({ key, value: valTranslate(value) }))
 
     return (
-        <div>
-            <Bar title="Activity infos" />
-            <main className="flex min-h-screen flex-col items-center justify-between p-24">
-                <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-                    <TableContainer sx={{ maxHeight: 440 }}>
-                        <Table stickyHeader aria-label="sticky table">
-                            <TableHead>
-                                <TableRow>
-                                    {columns.map((column) => (
-                                        <TableCell
-                                            key={column.id}
-                                            style={{ minWidth: column.minWidth }}
-                                        >
-                                            {column.label}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {rows.map((row) => {
-                                    return <TableRow
-                                        key={row.key}
-                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+        <Page title="Activity infos" >
+            <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+                <TableContainer sx={{ maxHeight: 440 }}>
+                    <Table stickyHeader aria-label="sticky table">
+                        <TableHead>
+                            <TableRow>
+                                {columns.map((column) => (
+                                    <TableCell
+                                        key={column.id}
+                                        style={{ minWidth: column.minWidth }}
                                     >
-                                        <TableCell component="th" scope="row">
-                                            {row.key}
-                                        </TableCell>
-                                        <TableCell>{row.value}</TableCell>
-                                    </TableRow>
-                                })}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                </Paper>
-            </main>
-        </div>
+                                        {column.label}
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {rows.map((row) => {
+                                return <TableRow
+                                    key={row.key}
+                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                >
+                                    <TableCell component="th" scope="row">
+                                        {row.key}
+                                    </TableCell>
+                                    <TableCell>{row.value}</TableCell>
+                                </TableRow>
+                            })}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Paper>
+        </Page>
     );
 }

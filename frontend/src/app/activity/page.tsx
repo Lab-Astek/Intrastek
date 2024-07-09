@@ -8,6 +8,7 @@ import Avatar from '@mui/material/Avatar';
 import FolderIcon from '@mui/icons-material/Folder';
 import List from '@mui/material/List';
 import { useEffect, useState } from "react";
+import Page from "@/components/page";
 
 export default function Home() {
     let [activitiesIds, setActivitiesIds] = useState<UUID[]>([]);
@@ -19,7 +20,7 @@ export default function Home() {
     }, []);
 
     return (
-        <main className="flex min-h-screen flex-col items-center p-24">
+        <Page title={"Activities listing"}>
             <h1>Activities</h1>
             {<List>
                 {activitiesIds.map((id) => (
@@ -40,6 +41,6 @@ export default function Home() {
                 setActivitiesIds(ids);
                 console.log(ids);
             }}>Refresh</ButtonWrapper>
-        </main>
+        </Page >
     );
 }
