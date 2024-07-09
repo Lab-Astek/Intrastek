@@ -8,10 +8,19 @@ const roboto = Roboto({
   display: 'swap',
 });
 
-const theme = createTheme({
+const lightTheme = createTheme({
   typography: {
     fontFamily: roboto.style.fontFamily,
   },
 });
 
-export default theme;
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
+  typography: {
+    fontFamily: roboto.style.fontFamily,
+  },
+});
+
+export { darkTheme, lightTheme, roboto };
