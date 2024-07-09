@@ -40,9 +40,7 @@ function ActivityCreationPageButton() {
 export default function Home() {
   return (
     <div>
-      <Page title="Intrastek">
-        <EventCalendar />
-      </Page>
+      <Page title="Intrastek"></Page>
     </div>
   );
 }

@@ -12,7 +12,6 @@ import {
   DialogContentText,
   DialogTitle,
   Button,
-  Autocomplete,
   Box,
   Checkbox,
   Typography,

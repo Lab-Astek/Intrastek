@@ -24,6 +24,9 @@ import EventInfo from "./EventInfo";
 import AddEventModal from "./AddEventModal";
 import EventInfoModal from "./EventInfoModal";
 import AddDatePickerEventModal from "./AddDatePickerEventModal";
+import { addIndisponibility } from "@/api/asteks";
+import { randomUUID } from "crypto";
+import { IndisponibilityType } from "@/types/astek";
 
 const locales = {
   "en-US": enUS,
@@ -40,6 +43,7 @@ const localizer = dateFnsLocalizer({
 export interface IEventInfo extends Event {
   _id: string;
   description: string;
+  type: IndisponibilityType;
 }
 
 export interface EventFormData {
@@ -110,11 +114,22 @@ const EventCalendar = () => {
   const onAddEvent = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
+    if (!currentEvent) return;
+    if (!currentEvent.start || !currentEvent.end) return;
+
+    // addIndisponibility(randomUUID(), {
+    //   type: IndisponibilityType.Private,
+    //   interval: { start: currentEvent?.start, end: currentEvent?.end },
+    // }).then((response) => {
+    //   console.log(response);
+    // });
+
     const data: IEventInfo = {
       ...eventFormData,
       _id: generateId(),
       start: currentEvent?.start,
       end: currentEvent?.end,
+      type: IndisponibilityType.Private,
     };
 
     const newEvents = [...events, data];
@@ -143,6 +158,7 @@ const EventCalendar = () => {
       end: datePickerEventFormData.allDay
         ? addHours(datePickerEventFormData.start, 12)
         : setMinToZero(datePickerEventFormData.end),
+      type: IndisponibilityType.Private,
     };
 
     const newEvents = [...events, data];
@@ -225,8 +241,14 @@ const EventCalendar = () => {
               eventPropGetter={(event) => {
                 return {
                   style: {
-                    backgroundColor: "#b64fc8",
-                    borderColor: "#b64fc8",
+                    backgroundColor:
+                      event.type === IndisponibilityType.Private
+                        ? "red"
+                        : "#b64fc8",
+                    borderColor:
+                      event.type === IndisponibilityType.Private
+                        ? "red"
+                        : "#b64fc8",
                   },
                 };
               }}
