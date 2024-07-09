@@ -8,6 +8,7 @@ use crate::{
 };
 
 pub mod astek;
+pub mod auth;
 
 pub fn get_state<T>(
     state: &State<Mutex<IntrastekState>>,

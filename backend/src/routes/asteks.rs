@@ -6,26 +6,57 @@ use uuid::Uuid;
 use crate::{
     astek::{indisponibility::Indisponibility, Astek},
     helpers::{request::Request, response::Response, AlreadyExists, InternalError},
-    middlewares::{astek, get_state_mut},
+    middlewares::{
+        astek,
+        auth::{AuthenticatedUser, KeyStore},
+        get_state_mut,
+    },
     state::IntrastekState,
 };
 
+use log::info;
+
 pub fn load_asteks(rocket: Rocket<Build>) -> Rocket<Build> {
-    rocket.mount(
-        "/asteks",
-        routes![
-            register_asteks,
-            get_asteks,
-            get_astek,
-            add_indisponibility,
-            delete_astek,
-            delete_indisponibility
-        ],
-    )
+    info!("Loading asteks...");
+    rocket
+        .mount(
+            "/asteks",
+            routes![
+                register_asteks,
+                get_asteks,
+                get_astek,
+                add_indisponibility,
+                delete_astek,
+                delete_indisponibility
+            ],
+        )
+        .manage(Arc::new(KeyStore::new()))
 }
+
+// #[post("/", data = "<req>")]
+// async fn register_asteks(
+//     req: Json<Request<Uuid>>,
+//     state: &State<Mutex<IntrastekState>>,
+// ) -> Response<&'static str, String> {
+//     get_state_mut(state, |mutex| {
+//         if mutex
+//             .asteks
+//             .iter()
+//             .any(|a| a.as_ref().read().is_ok_and(|x| x.id == req.data))
+//         {
+//             return Err(Box::new(AlreadyExists { data: req.data }));
+//         }
+//         mutex
+//             .asteks
+//             .push(Arc::new(RwLock::new(Astek::new(req.data))));
+//         Ok("Ok")
+//     })
+//     .into()
+// }
 
 #[post("/", data = "<req>")]
 async fn register_asteks(
+    _user: AuthenticatedUser,
     req: Json<Request<Uuid>>,
     state: &State<Mutex<IntrastekState>>,
 ) -> Response<&'static str, String> {

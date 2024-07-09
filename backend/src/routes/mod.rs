@@ -2,18 +2,15 @@ use std::sync::Mutex;
 
 use activities::load_activities;
 use asteks::load_asteks;
-use login::load_login;
 use rocket::{get, put, routes, Build, Rocket, State};
 
 use crate::state::IntrastekState;
 
 pub mod activities;
 mod asteks;
-mod login;
 
 pub fn init_router(mut rocket: Rocket<Build>) -> Rocket<Build> {
     rocket = rocket.mount("/", routes![ping]);
-    rocket = load_login(rocket);
     rocket = load_activities(rocket);
     load_asteks(rocket)
 }
