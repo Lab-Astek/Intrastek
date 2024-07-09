@@ -43,7 +43,6 @@ function ActivityCreationPageButton() {
   );
 }
 
-
 function LoginAstekButton() {
   const { instance } = useMsal();
 

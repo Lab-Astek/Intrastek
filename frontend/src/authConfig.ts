@@ -8,7 +8,7 @@ export const msalConfig: Configuration = {
         postLogoutRedirectUri: "/"
     },
     system: {
-        allowNativeBroker: false // Disables WAM Broker
+        allowNativeBroker: false
     }
 };
 
