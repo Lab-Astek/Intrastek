@@ -37,9 +37,5 @@ function ActivityCreationPageButton() {
 }
 
 export default function Home() {
-  return (
-    <Page title="Intrastek">
-      <ActivityCreationPageButton />
-    </Page>
-  );
+  return <Page title="Intrastek">{/* <ActivityCreationPageButton /> */}</Page>;
 }
