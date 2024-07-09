@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { AppRouterCacheProvider } from '@mui/material-nextjs/v13-appRouter';
-import CssBaseline from '@mui/material/CssBaseline';
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
+import CssBaseline from "@mui/material/CssBaseline";
 import MUIWrapper from "@/components/muiWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -17,7 +17,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
     <html lang="en">
       <body className={inter.className}>
@@ -28,6 +27,6 @@ export default function RootLayout({
           </MUIWrapper>
         </AppRouterCacheProvider>
       </body>
-    </html >
+    </html>
   );
 }

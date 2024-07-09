@@ -3,16 +3,16 @@ import { Interval } from "./interval";
 import { Activity } from "./activity";
 
 export type Astek = {
-    id: UUID;
-    indisponibilities: Indisponibility[];
-    assignations: Activity[];
+  id: UUID;
+  indisponibilities: Indisponibility[];
+  assignations: Activity[];
 };
 
 export enum IndisponibilityType {
-    Private = "Private",
+  Private = "Private",
 }
 
 export type Indisponibility = {
-    type: IndisponibilityType;
-    interval: Interval
-}
+  type: IndisponibilityType;
+  interval: Interval;
+};

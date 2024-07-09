@@ -9,10 +9,13 @@ import Page from "@/components/page";
 const TEST_ID: UUID = "2fdfd8fe-59c0-4a93-9f3b-e0f75110bb1b";
 
 function AstekButton() {
-  let [result, setResult] = useState<Astek>({ id: randomUUID(), indisponibilities: [], assignations: [] });
+  let [result, setResult] = useState<Astek>({
+    id: randomUUID(),
+    indisponibilities: [],
+    assignations: [],
+  });
 
   function handleClick() {
-
     getAstek(TEST_ID)
       .then((response) => {
         setResult(response.data);
@@ -20,14 +23,9 @@ function AstekButton() {
       .catch((error) => {
         console.log(error);
       });
-
   }
 
-  return (
-    <button onClick={handleClick}>
-      Click me {result.id}
-    </button>
-  );
+  return <button onClick={handleClick}>Click me {result.id}</button>;
 }
 
 function ActivityCreationPageButton() {
