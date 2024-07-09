@@ -4,7 +4,7 @@ import { UUID, randomUUID } from "crypto";
 import { getAstek } from "../api/asteks";
 import { Astek } from "../types/astek";
 import ButtonWrapper from "@/components/button";
-import SelectWrapper from "@/components/inputs/select";
+import Page from "@/components/page";
 
 const TEST_ID: UUID = "2fdfd8fe-59c0-4a93-9f3b-e0f75110bb1b";
 
@@ -40,9 +40,8 @@ function ActivityCreationPageButton() {
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <h1>Intrastek</h1>
+    <Page title="Intrastek">
       <ActivityCreationPageButton />
-    </main>
+    </Page>
   );
 }

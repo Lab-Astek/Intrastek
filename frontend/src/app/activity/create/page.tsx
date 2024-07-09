@@ -11,6 +11,8 @@ import { createActivity, getActivity } from '@/api/activity';
 import { Astek } from '@/types/astek';
 import Stack from '@mui/material/Stack';
 import DatePicker from '@/components/inputs/datePicker';
+import Bar from '@/components/bar';
+import Page from '@/components/page';
 
 const activities = [
   ActivitiyType.Permanence,
@@ -85,7 +87,7 @@ export default function Home() {
 
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-between p-24">
+    <Page title="Activity creation">
       <form noValidate autoComplete="off">
         <Stack spacing={3}>
           <Box
@@ -114,6 +116,6 @@ export default function Home() {
           </ButtonWrapper>
         </Stack>
       </form>
-    </div>
+    </Page>
   )
 }
