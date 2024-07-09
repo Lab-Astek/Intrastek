@@ -23,7 +23,6 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import EventInfo from "./EventInfo";
 import AddEventModal from "./AddEventModal";
 import EventInfoModal from "./EventInfoModal";
-import { AddTodoModal } from "./AddTodoModal";
 import AddDatePickerEventModal from "./AddDatePickerEventModal";
 
 const locales = {
@@ -38,16 +37,9 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-export interface ITodo {
-  _id: string;
-  title: string;
-  color?: string;
-}
-
 export interface IEventInfo extends Event {
   _id: string;
   description: string;
-  todoId?: string;
 }
 
 export interface EventFormData {
@@ -57,7 +49,6 @@ export interface EventFormData {
 
 export interface DatePickerEventFormData {
   description: string;
-  todoId?: string;
   allDay: boolean;
   start?: Date;
   end?: Date;
@@ -73,7 +64,6 @@ const initialEventFormState: EventFormData = {
 
 const initialDatePickerEventFormData: DatePickerEventFormData = {
   description: "",
-  todoId: undefined,
   allDay: false,
   start: undefined,
   end: undefined,
@@ -82,7 +72,6 @@ const initialDatePickerEventFormData: DatePickerEventFormData = {
 const EventCalendar = () => {
   const [openSlot, setOpenSlot] = useState(false);
   const [openDatepickerModal, setOpenDatepickerModal] = useState(false);
-  const [openTodoModal, setOpenTodoModal] = useState(false);
   const [currentEvent, setCurrentEvent] = useState<Event | IEventInfo | null>(
     null
   );
@@ -90,7 +79,6 @@ const EventCalendar = () => {
   const [eventInfoModal, setEventInfoModal] = useState(false);
 
   const [events, setEvents] = useState<IEventInfo[]>([]);
-  const [todos, setTodos] = useState<ITodo[]>([]);
 
   const [eventFormData, setEventFormData] = useState<EventFormData>(
     initialEventFormState
@@ -184,7 +172,7 @@ const EventCalendar = () => {
         <Card>
           <CardHeader
             title="Calendar"
-            subheader="Create Events and Todos and manage them easily"
+            subheader="Manage your indisponibilities and assignations here."
           />
           <Divider />
           <CardContent>
@@ -201,13 +189,6 @@ const EventCalendar = () => {
                 >
                   Add event
                 </Button>
-                <Button
-                  onClick={() => setOpenTodoModal(true)}
-                  size="small"
-                  variant="contained"
-                >
-                  Create todo
-                </Button>
               </ButtonGroup>
             </Box>
             <Divider style={{ margin: 10 }} />
@@ -217,7 +198,6 @@ const EventCalendar = () => {
               eventFormData={eventFormData}
               setEventFormData={setEventFormData}
               onAddEvent={onAddEvent}
-              todos={todos}
             />
             <AddDatePickerEventModal
               open={openDatepickerModal}
@@ -225,19 +205,12 @@ const EventCalendar = () => {
               datePickerEventFormData={datePickerEventFormData}
               setDatePickerEventFormData={setDatePickerEventFormData}
               onAddEvent={onAddEventFromDatePicker}
-              todos={todos}
             />
             <EventInfoModal
               open={eventInfoModal}
               handleClose={() => setEventInfoModal(false)}
               onDeleteEvent={onDeleteEvent}
               currentEvent={currentEvent as IEventInfo}
-            />
-            <AddTodoModal
-              open={openTodoModal}
-              handleClose={() => setOpenTodoModal(false)}
-              todos={todos}
-              setTodos={setTodos}
             />
             <Calendar
               localizer={localizer}
@@ -250,16 +223,16 @@ const EventCalendar = () => {
               endAccessor="end"
               defaultView="week"
               eventPropGetter={(event) => {
-                const hasTodo = todos.find((todo) => todo._id === event.todoId);
                 return {
                   style: {
-                    backgroundColor: hasTodo ? hasTodo.color : "#b64fc8",
-                    borderColor: hasTodo ? hasTodo.color : "#b64fc8",
+                    backgroundColor: "#b64fc8",
+                    borderColor: "#b64fc8",
                   },
                 };
               }}
               style={{
-                height: 900,
+                height: 500,
+                width: 1000,
               }}
             />
           </CardContent>
