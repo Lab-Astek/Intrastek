@@ -18,19 +18,17 @@ use log::info;
 
 pub fn load_asteks(rocket: Rocket<Build>) -> Rocket<Build> {
     info!("Loading asteks...");
-    rocket
-        .mount(
-            "/asteks",
-            routes![
-                register_asteks,
-                get_asteks,
-                get_astek,
-                add_indisponibility,
-                delete_astek,
-                delete_indisponibility
-            ],
-        )
-        .manage(Arc::new(KeyStore::new()))
+    rocket.mount(
+        "/asteks",
+        routes![
+            register_asteks,
+            get_asteks,
+            get_astek,
+            add_indisponibility,
+            delete_astek,
+            delete_indisponibility
+        ],
+    )
 }
 
 // #[post("/", data = "<req>")]

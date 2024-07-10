@@ -4,16 +4,13 @@ import { UUID, randomUUID } from "crypto";
 import { getAstek } from "../api/asteks";
 import { Astek } from "../types/astek";
 import ButtonWrapper from "@/components/button";
-<<<<<<< HEAD
 import SelectWrapper from "@/components/inputs/select";
 import { MsalProvider, useMsal } from "@azure/msal-react";
 import { loginRequest } from "../authConfig";
 import { PublicClientApplication } from "@azure/msal-browser";
 import { msalConfig } from "../authConfig";
 import { log_auth } from "../api/request"
-=======
 import Page from "@/components/page";
->>>>>>> master
 
 const TEST_ID: UUID = "2fdfd8fe-59c0-4a93-9f3b-e0f75110bb1b";
 const MSAL_INSTANCE = new PublicClientApplication(msalConfig);
@@ -60,7 +57,7 @@ function LoginAstekButton() {
   async function sendTokenToBackend(token: string) {
     try {
       console.log("Sending token to backend...");
-      const response = await log_auth("POST", 'asteks', token);
+      const response = await log_auth('POST', 'asteks', token);
       console.log('Success:', response.data);
     } catch (error) {
       console.error('Error:', error);

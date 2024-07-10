@@ -2,12 +2,13 @@ use jsonwebtoken::{decode, decode_header, Algorithm, DecodingKey, Validation};
 use rocket::{
     http::Status,
     request::{FromRequest, Outcome, Request},
+    State,
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use log::{info, warn};
+use log::{error, info, warn};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Claims {
@@ -33,7 +34,8 @@ pub struct Jwk {
     n: String,
     e: String,
     kty: String,
-    alg: String,
+    // #[serde(default)]
+    alg: Option<String>,
 }
 
 pub struct KeyStore {
@@ -63,7 +65,7 @@ impl KeyStore {
 async fn fetch_jwks() -> Result<Jwks, reqwest::Error> {
     let jwks_uri = "https://login.microsoftonline.com/common/discovery/keys";
     let jwks: Jwks = reqwest::get(jwks_uri).await?.json::<Jwks>().await?;
-    warn!("Fetched jwks!");
+    warn!("Fetched jwks: {:?}", jwks);
     Ok(jwks)
 }
 
@@ -75,29 +77,54 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
         info!("Authenticating from request...");
         let keys: Vec<_> = request.headers().get("Authorization").collect();
         if keys.len() != 1 {
+            warn!("Authorization header missing or has multiple values");
             return Outcome::Error((Status::Unauthorized, ()));
         }
 
         let token = keys[0].trim_start_matches("Bearer ");
+        info!("Token received: {}", token);
 
         let key_store = request.rocket().state::<Arc<KeyStore>>().unwrap();
 
         let header = decode_header(token).unwrap();
-        let kid = header.kid.unwrap();
+        info!("Token header: {:?}", header);
 
-        let decoding_key = match key_store.get_decoding_key(&kid).await {
-            Some(key) => key,
-            None => return Outcome::Error((Status::Unauthorized, ())),
+        let kid = match header.kid {
+            Some(kid) => {
+                info!("Token kid: {}", kid);
+                kid
+            }
+            None => {
+                warn!("Token kid is missing");
+                return Outcome::Error((Status::Unauthorized, ()));
+            }
         };
 
-        // let validation = Validation {
-        //     algorithms: vec![Algorithm::RS256],
-        //     ..Validation::default()
-        // };
+        let decoding_key = match key_store.get_decoding_key(&kid).await {
+            Some(key) => {
+                info!("Using decoding key for kid: {}", kid);
+                key
+            }
+            None => {
+                warn!("No decoding key found for kid: {}", kid);
+                return Outcome::Error((Status::Unauthorized, ()));
+            }
+        };
 
-        match decode::<Claims>(token, &decoding_key, &Validation::new(Algorithm::HS256)) {
-            Ok(c) => Outcome::Success(AuthenticatedUser { claims: c.claims }),
-            Err(_) => Outcome::Error((Status::Unauthorized, ())),
+        let mut validation = Validation::new(Algorithm::RS256);
+        validation.validate_exp = true;
+        validation.set_issuer(&["expected_issuer"]);
+        validation.set_audience(&["expected_audience"]);
+
+        match decode::<Claims>(token, &decoding_key, &validation) {
+            Ok(c) => {
+                info!("Token successfully decoded: {:?}", c.claims);
+                Outcome::Success(AuthenticatedUser { claims: c.claims })
+            }
+            Err(err) => {
+                error!("Error decoding token: {:?}", err);
+                Outcome::Error((Status::Unauthorized, ()))
+            }
         }
     }
 }
