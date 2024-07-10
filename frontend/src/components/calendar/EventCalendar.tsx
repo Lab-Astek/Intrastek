@@ -1,4 +1,11 @@
-import { useState, MouseEvent } from "react";
+import {
+  useState,
+  MouseEvent,
+  ReactElement,
+  FC,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import {
   Box,
   Button,
@@ -24,8 +31,6 @@ import EventInfo from "./EventInfo";
 import AddEventModal from "./AddEventModal";
 import EventInfoModal from "./EventInfoModal";
 import AddDatePickerEventModal from "./AddDatePickerEventModal";
-import { addIndisponibility } from "@/api/asteks";
-import { randomUUID } from "crypto";
 import { IndisponibilityType } from "@/types/astek";
 
 const locales = {
@@ -73,7 +78,22 @@ const initialDatePickerEventFormData: DatePickerEventFormData = {
   end: undefined,
 };
 
-const EventCalendar = () => {
+type EventCalendarProps = {
+  onAddEvent: (
+    event: Event,
+    eventFormData: EventFormData,
+    events: [IEventInfo[], Dispatch<SetStateAction<IEventInfo[]>>]
+  ) => void;
+  onDeleteEvent?: (event: Event) => void;
+
+  eventHandlers?: [IEventInfo[], Dispatch<SetStateAction<IEventInfo[]>>];
+};
+
+const EventCalendar: FC<EventCalendarProps> = ({
+  onAddEvent,
+  onDeleteEvent,
+  eventHandlers,
+}: EventCalendarProps): ReactElement => {
   const [openSlot, setOpenSlot] = useState(false);
   const [openDatepickerModal, setOpenDatepickerModal] = useState(false);
   const [currentEvent, setCurrentEvent] = useState<Event | IEventInfo | null>(
@@ -82,7 +102,7 @@ const EventCalendar = () => {
 
   const [eventInfoModal, setEventInfoModal] = useState(false);
 
-  const [events, setEvents] = useState<IEventInfo[]>([]);
+  const [events, setEvents] = eventHandlers || useState<IEventInfo[]>([]);
 
   const [eventFormData, setEventFormData] = useState<EventFormData>(
     initialEventFormState
@@ -111,30 +131,14 @@ const EventCalendar = () => {
     setOpenDatepickerModal(false);
   };
 
-  const onAddEvent = (e: MouseEvent<HTMLButtonElement>) => {
+  const onAddEventInternal = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
     if (!currentEvent) return;
     if (!currentEvent.start || !currentEvent.end) return;
 
-    // addIndisponibility(randomUUID(), {
-    //   type: IndisponibilityType.Private,
-    //   interval: { start: currentEvent?.start, end: currentEvent?.end },
-    // }).then((response) => {
-    //   console.log(response);
-    // });
+    onAddEvent(currentEvent, eventFormData, [events, setEvents]);
 
-    const data: IEventInfo = {
-      ...eventFormData,
-      _id: generateId(),
-      start: currentEvent?.start,
-      end: currentEvent?.end,
-      type: IndisponibilityType.Private,
-    };
-
-    const newEvents = [...events, data];
-
-    setEvents(newEvents);
     handleClose();
   };
 
@@ -167,7 +171,8 @@ const EventCalendar = () => {
     setDatePickerEventFormData(initialDatePickerEventFormData);
   };
 
-  const onDeleteEvent = () => {
+  const onDeleteEventInternal = () => {
+    currentEvent && onDeleteEvent && onDeleteEvent(currentEvent);
     setEvents(() =>
       [...events].filter((e) => e._id !== (currentEvent as IEventInfo)._id!)
     );
@@ -213,7 +218,7 @@ const EventCalendar = () => {
               handleClose={handleClose}
               eventFormData={eventFormData}
               setEventFormData={setEventFormData}
-              onAddEvent={onAddEvent}
+              onAddEvent={onAddEventInternal}
             />
             <AddDatePickerEventModal
               open={openDatepickerModal}
@@ -225,7 +230,7 @@ const EventCalendar = () => {
             <EventInfoModal
               open={eventInfoModal}
               handleClose={() => setEventInfoModal(false)}
-              onDeleteEvent={onDeleteEvent}
+              onDeleteEvent={onDeleteEventInternal}
               currentEvent={currentEvent as IEventInfo}
             />
             <Calendar

@@ -5,16 +5,11 @@ import { getAstek } from "../api/asteks";
 import { Astek } from "../types/astek";
 import ButtonWrapper from "@/components/button";
 import Page from "@/components/page";
-import EventCalendar from "@/components/calendar/EventCalendar";
 
 const TEST_ID: UUID = "2fdfd8fe-59c0-4a93-9f3b-e0f75110bb1b";
 
 function AstekButton() {
-  let [result, setResult] = useState<Astek>({
-    id: randomUUID(),
-    indisponibilities: [],
-    assignations: [],
-  });
+  let [result, setResult] = useState<Astek | undefined>(undefined);
 
   function handleClick() {
     getAstek(TEST_ID)
@@ -26,7 +21,7 @@ function AstekButton() {
       });
   }
 
-  return <button onClick={handleClick}>Click me {result.id}</button>;
+  return <button onClick={handleClick}>Click me {result?.id}</button>;
 }
 
 function ActivityCreationPageButton() {
@@ -40,7 +35,9 @@ function ActivityCreationPageButton() {
 export default function Home() {
   return (
     <div>
-      <Page title="Intrastek"></Page>
+      <Page title="Intrastek">
+        <AstekButton />
+      </Page>
     </div>
   );
 }
