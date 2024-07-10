@@ -75,30 +75,44 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
 
     async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
         info!("Authenticating from request...");
-        let keys: Vec<_> = request.headers().get("Authorization").collect();
-        if keys.len() != 1 {
-            warn!("Authorization header missing or has multiple values");
-            return Outcome::Error((Status::Unauthorized, ()));
-        }
 
-        let token = keys[0].trim_start_matches("Bearer ");
+        let token = match request.headers().get_one("Authorization") {
+            Some(bearer) if bearer.starts_with("Bearer ") => {
+                bearer.trim_start_matches("Bearer ").to_string()
+            }
+            _ => {
+                warn!("Authorization header missing or improperly formatted");
+                return Outcome::Error((Status::Unauthorized, ()));
+            }
+        };
         info!("Token received: {}", token);
 
-        let key_store = request.rocket().state::<Arc<KeyStore>>().unwrap();
+        let key_store = match request.rocket().state::<Arc<KeyStore>>() {
+            Some(store) => store,
+            None => {
+                error!("KeyStore state is not initialized");
+                return Outcome::Error((Status::InternalServerError, ()));
+            }
+        };
 
-        let header = decode_header(token).unwrap();
+        let header = match decode_header(&token) {
+            Ok(header) => header,
+            Err(_) => {
+                warn!("Invalid token header");
+                return Outcome::Error((Status::Unauthorized, ()));
+            }
+        };
+
         info!("Token header: {:?}", header);
 
         let kid = match header.kid {
-            Some(kid) => {
-                info!("Token kid: {}", kid);
-                kid
-            }
+            Some(kid) => kid,
             None => {
                 warn!("Token kid is missing");
                 return Outcome::Error((Status::Unauthorized, ()));
             }
         };
+        info!("Token kid: {}", kid);
 
         let decoding_key = match key_store.get_decoding_key(&kid).await {
             Some(key) => {
@@ -116,7 +130,7 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
         validation.set_issuer(&["expected_issuer"]);
         validation.set_audience(&["expected_audience"]);
 
-        match decode::<Claims>(token, &decoding_key, &validation) {
+        match decode::<Claims>(&token, &decoding_key, &validation) {
             Ok(c) => {
                 info!("Token successfully decoded: {:?}", c.claims);
                 Outcome::Success(AuthenticatedUser { claims: c.claims })
