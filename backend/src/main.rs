@@ -16,6 +16,7 @@ mod module;
 mod planner;
 mod routes;
 mod state;
+
 mod db;
 
 use crate::middlewares::auth::KeyStore;

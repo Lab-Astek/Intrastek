@@ -435,6 +435,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a12916984aab3fa6e39d655a33e09c0071eb36d6ab3aea5c2d78551f1df6d952"
 
 [[package]]
+name = "cargo-prisma"
+version = "0.1.0"
+dependencies = [
+ "prisma-client-rust-cli",
+]
+
+[[package]]
 name = "cc"
 version = "1.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2646,13 +2653,6 @@ name = "ppv-lite86"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
-
-[[package]]
-name = "prisma-cli"
-version = "0.1.0"
-dependencies = [
- "prisma-client-rust-cli",
-]
 
 [[package]]
 name = "prisma-client-rust"
