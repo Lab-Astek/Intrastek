@@ -11,6 +11,7 @@ use uuid::Uuid;
 
 use crate::{
     activity::{Activities, Activity},
+    db::astek,
     interval::Interval,
 };
 
@@ -87,5 +88,27 @@ impl Display for Astek {
             "{} assignations since start of the year",
             self.timetable.get_total_assign()
         )
+    }
+}
+
+impl From<astek::Data> for Astek {
+    fn from(data: astek::Data) -> Self {
+        Astek {
+            id: Uuid::parse_str(&data.id).unwrap(),
+            indisponibilities: vec![],
+            assignations: vec![],
+            timetable: Timetable::default(),
+        }
+    }
+}
+
+impl From<&astek::Data> for Astek {
+    fn from(data: &astek::Data) -> Self {
+        Astek {
+            id: Uuid::parse_str(&data.id).unwrap(),
+            indisponibilities: vec![],
+            assignations: vec![],
+            timetable: Timetable::default(),
+        }
     }
 }
