@@ -83,18 +83,10 @@ model Activity {
     needed_asteks Int
 }
 
-model IndisponibilityType {
-    id      Int             @id
-    indi    Indisponibility @relation(fields: [id], references: [id])
-    private Boolean
-    type    ActivityType?
-}
-
 model Indisponibility {
-    id      Int                   @id
+    id      Int      @id @default(autoincrement())
     astekId String
-    astek   Astek                 @relation(fields: [astekId], references: [id])
+    astek   Astek    @relation(fields: [astekId], references: [id])
     start   DateTime
     end     DateTime
-    type    IndisponibilityType[]
 }
