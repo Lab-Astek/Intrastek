@@ -46,6 +46,7 @@ model Permanence {
 
 model Astek {
     id              String            @id @unique
+    email           String            @unique
     FollowUp        FollowUp[]
     Bootstrap       Bootstrap[]
     Review          Review[]
