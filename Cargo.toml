@@ -1,3 +1,3 @@
 [workspace]
-members = ["backend"]
-resolver = "1"
+members = ["backend", "backend/prisma-cli"]
+resolver = "2"
