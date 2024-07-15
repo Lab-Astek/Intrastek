@@ -8,9 +8,9 @@ import Page from "@/components/page";
 import SelectWrapper from "@/components/inputs/select";
 import { Box } from "@mui/material";
 
-import { MsalProvider, useMsal, useAccount } from "@azure/msal-react";
+import { MsalProvider, useMsal, useAccount, useIsAuthenticated } from "@azure/msal-react";
 import { loginRequest } from "../authConfig";
-import { EventType, EventMessage, AuthenticationResult } from "@azure/msal-browser";
+import { EventType, EventMessage, AuthenticationResult, InteractionStatus } from "@azure/msal-browser";
 import { AuthenticatedTemplate, UnauthenticatedTemplate } from "@azure/msal-react";
 import { msalInstance } from "./msal/MsGraphApiCall";
 import { log_auth } from "../api/request"
@@ -41,30 +41,57 @@ function ActivityCreationPageButton() {
   );
 }
 
-function LoginAstekButton() {
+
+function LogoutButton() {
+  const { instance } = useMsal();
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  function handleLogout() {
+    setAnchorEl(null);
+    instance.logoutPopup();
+  }
+
+  return <button onClick={handleLogout}>Logout</button>
+}
+
+function LoginButton() {
   const { instance } = useMsal();
 
   function handleLogin() {
-    instance.loginRedirect(loginRequest).then(response => {
-      // sendTokenToBackend(response.accessToken);
+    instance.loginPopup(loginRequest).then(response => {
+      sendTokenToBackend(response.accessToken);
     }).catch(e => {
       console.error(e);
     });
   }
 
-  // async function sendTokenToBackend(token: string) {
-  //   try {
-  //     console.log("Sending token to backend...");
-  //     const response = await log_auth('POST', 'asteks', token);
-  //     console.log('Success:', response.data);
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //   }
-  // }
+  async function sendTokenToBackend(token: string) {
+    try {
+      console.log("Sending token to backend...");
+      const response = await log_auth('POST', 'asteks', token);
+      console.log('Success:', response.data);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
 
-  return (
-    <button onClick={handleLogin}>Login</button>
-  );
+  return <button onClick={handleLogin}>Login</button>
+}
+
+function LoginAstekButton() {
+  const status = useMsal();
+  const isAuthenticated = useIsAuthenticated();
+
+
+  if (isAuthenticated) {
+        return <LogoutButton />;
+  } else if (status !== InteractionStatus.Startup && status !== InteractionStatus.HandleRedirect) {
+      return <LoginButton />;
+  } else {
+      return null;
+  }
 }
 
 const AccountInfo = () => {
