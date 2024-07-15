@@ -6,5 +6,9 @@ fn main() {
         .args(["generate"])
         .status()
         .unwrap();
+    Command::new("cargo-prisma")
+        .args(["db", "push"])
+        .status()
+        .unwrap();
     println!("cargo:warning=Prisma schema has been updated");
 }

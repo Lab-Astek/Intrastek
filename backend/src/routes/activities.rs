@@ -13,26 +13,26 @@ use crate::{
     state::IntrastekState,
 };
 
-pub fn load_activities(rocket: Rocket<Build>) -> Rocket<Build> {
-    rocket.mount(
-        "/activities",
-        routes![get_activities, add_activity, get_activity],
-    )
-}
+// pub fn load_activities(rocket: Rocket<Build>) -> Rocket<Build> {
+//     rocket.mount(
+//         "/activities",
+//         routes![get_activities, add_activity, get_activity],
+//     )
+// }
 
-#[get("/")]
-async fn get_activities(state: &State<Mutex<IntrastekState>>) -> Response<Vec<Uuid>, String> {
-    get_state(state, |mutex| {
-        Ok(mutex
-            .planner
-            .activities
-            .clone()
-            .iter()
-            .map(|a| a.id)
-            .collect())
-    })
-    .into()
-}
+// #[get("/")]
+// async fn get_activities(state: &State<Mutex<IntrastekState>>) -> Response<Vec<Uuid>, String> {
+//     get_state(state, |mutex| {
+//         Ok(mutex
+//             .planner
+//             .activities
+//             .clone()
+//             .iter()
+//             .map(|a| a.id)
+//             .collect())
+//     })
+//     .into()
+// }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ActivityRequest {
@@ -43,30 +43,30 @@ pub struct ActivityRequest {
     pub module: Option<Module>,
 }
 
-#[post("/", data = "<activity>")]
-async fn add_activity(
-    activity: Json<Request<ActivityRequest>>,
-    state: &State<Mutex<IntrastekState>>,
-) -> Response<Uuid, String> {
-    get_state_mut(state, |mutex| {
-        let act: Activity = activity.data.clone().into();
-        mutex.planner.add_activity(act.clone());
-        Ok(act.id)
-    })
-    .into()
-}
+// #[post("/", data = "<activity>")]
+// async fn add_activity(
+//     activity: Json<Request<ActivityRequest>>,
+//     state: &State<Mutex<IntrastekState>>,
+// ) -> Response<Uuid, String> {
+//     get_state_mut(state, |mutex| {
+//         let act: Activity = activity.data.clone().into();
+//         mutex.planner.add_activity(act.clone());
+//         Ok(act.id)
+//     })
+//     .into()
+// }
 
-#[get("/<id>")]
-async fn get_activity(
-    id: Uuid,
-    state: &State<Mutex<IntrastekState>>,
-) -> Response<Activity, String> {
-    get_state(state, |mutex| {
-        if let Some(activity) = mutex.planner.activities.iter().find(|a| a.id == id) {
-            Ok(activity.clone())
-        } else {
-            Err(Box::new(InternalError))
-        }
-    })
-    .into()
-}
+// #[get("/<id>")]
+// async fn get_activity(
+//     id: Uuid,
+//     state: &State<Mutex<IntrastekState>>,
+// ) -> Response<Activity, String> {
+//     get_state(state, |mutex| {
+//         if let Some(activity) = mutex.planner.activities.iter().find(|a| a.id == id) {
+//             Ok(activity.clone())
+//         } else {
+//             Err(Box::new(InternalError))
+//         }
+//     })
+//     .into()
+// }

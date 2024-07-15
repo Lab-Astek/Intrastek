@@ -7,7 +7,7 @@ services:
     depends_on:
       - db
     environment:
-      - INTRASTEK_DATABASE_URL=mysql://root:root@localhost:3306/db
+      - INTRASTEK_DATABASE_URL=mysql://root:root@localhost:3306/intrastek-db
 
   frontend:
     build: ./frontend
