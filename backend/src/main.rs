@@ -17,6 +17,7 @@ mod planner;
 mod routes;
 mod state;
 
+#[allow(warnings)]
 mod db;
 
 use crate::middlewares::auth::KeyStore;
