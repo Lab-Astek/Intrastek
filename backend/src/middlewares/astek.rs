@@ -10,6 +10,7 @@ use crate::{
     state::IntrastekState,
 };
 
+use crate::db::activity;
 use super::get_state;
 
 pub fn get_astek_and_then<T>(
@@ -42,4 +43,11 @@ pub fn get_astek(
             Err(Box::new(InternalError))
         }
     })
+}
+
+pub fn create_astek(email: String) -> Result<(), Box<dyn IntrastekError>> {
+    let new_uuid = uuid::Uuid::new_v4();
+
+    // activity();
+    todo!("Create astek and add to db")
 }
