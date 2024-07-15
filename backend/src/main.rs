@@ -21,7 +21,7 @@ use crate::middlewares::auth::KeyStore;
 
 #[rocket::main]
 async fn main() -> Result<(), String> {
-    let env = Env::new().filter("ASSIGN_LOG");
+    let env = Env::new().filter("INTRASTEK_LOG");
     Builder::from_env(env).init();
 
     let cors = CorsOptions::default()
