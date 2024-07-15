@@ -12,7 +12,7 @@ type DatePickerProps = {
   onChange?:
     | ((
         value: Dayjs | null,
-        context: PickerChangeHandlerContext<DateTimeValidationError>,
+        context: PickerChangeHandlerContext<DateTimeValidationError>
       ) => void)
     | undefined;
 };

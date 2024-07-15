@@ -16,11 +16,7 @@ const TEST_ID: UUID = "2fdfd8fe-59c0-4a93-9f3b-e0f75110bb1b";
 const MSAL_INSTANCE = new PublicClientApplication(msalConfig);
 
 function AstekButton() {
-  let [result, setResult] = useState<Astek>({
-    id: randomUUID(),
-    indisponibilities: [],
-    assignations: [],
-  });
+  let [result, setResult] = useState<Astek | undefined>(undefined);
 
   function handleClick() {
     getAstek(TEST_ID)
@@ -32,7 +28,7 @@ function AstekButton() {
       });
   }
 
-  return <button onClick={handleClick}>Click me {result.id}</button>;
+  return <button onClick={handleClick}>Click me {result?.id}</button>;
 }
 
 function ActivityCreationPageButton() {
@@ -69,6 +65,16 @@ function LoginAstekButton() {
   );
 }
 
+// export default function Home() {
+//   return (
+//     <div>
+//       <Page title="Intrastek">
+//         <AstekButton />
+//       </Page>
+//     </div>
+//   );
+// }
+
 export default function Home() {
   return (
     <MsalProvider instance={MSAL_INSTANCE}>
@@ -88,6 +94,3 @@ export default function Home() {
   );
 }
 
-// export default function Home() {
-//   return <Page title="Intrastek">{/* <ActivityCreationPageButton /> */}</Page>;
-// }
