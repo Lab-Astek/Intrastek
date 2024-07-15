@@ -8,10 +8,31 @@ import Page from "@/components/page";
 import { Astek, Indisponibility, IndisponibilityType } from "@/types/astek";
 import { UUID } from "crypto";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useMsal, useAccount } from "@azure/msal-react";
 
 import { type Event } from "react-big-calendar";
 
 const TEST_ID: UUID = "2fdfd8fe-59c0-4a93-9f3b-e0f75110bb1b";
+
+const ProfileInfo = () => {
+  const { accounts } = useMsal();
+  const account = useAccount(accounts[0] || {});
+  const [name, setName] = useState("");
+
+  useEffect(() => {
+      if (account && account.name) {
+          setName(account.name);
+      } else {
+          setName("");
+      }
+  }, [account]);
+
+  if (name) {
+      return <h1>Account: {name}</h1>;
+  } else {
+      return <h1>Please login</h1>;
+  }
+};
 
 export default function Home() {
   let [result, setResult] = useState<Astek | undefined>(undefined);
@@ -75,6 +96,9 @@ export default function Home() {
 
   return (
     <Page title="Your calendar">
+      <div className="flex items-center justify-between w-full">
+        <ProfileInfo />
+      </div>
       <EventCalendar
         eventHandlers={[baseEvents, setBaseEvents]}
         onAddEvent={onAddEvent}

@@ -1,3 +1,4 @@
 /target
 .idea
 nodes_modules
+.eslintrc.json

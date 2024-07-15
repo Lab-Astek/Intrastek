@@ -28,7 +28,7 @@ const modules = ["Cpe", "Psu", "Mul", "Mat", "Web", "Aia", "None"];
 export default function Home() {
   let [name, setName] = useState<string>("");
   let [asteks, setAsteks] = useState<number>(0);
-  let [ActivityTypeIdx, setActivityTypeIdx] = useState<number>(0);
+  let [activityTypeIdx, setActivityTypeIdx] = useState<number>(0);
   let [moduleIdx, setModuleIdx] = useState<number>(0);
   let [startDate, setStartDate] = useState<Date>();
   let [endDate, setEndDate] = useState<Date>();
