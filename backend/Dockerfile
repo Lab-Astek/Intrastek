@@ -5,11 +5,13 @@ RUN cargo install --locked --path .
 
 FROM rust:1 as api-builder
 WORKDIR /api
-COPY prisma .
-COPY src .
-COPY Cargo.* .
-COPY --from=prisma-cli-builder /usr/local/cargo/bin/prisma-cli /usr/local/bin/prisma-cli
-RUN prisma-cli generate
+RUN mkdir -p /api/prisma
+RUN mkdir -p /api/src
+COPY prisma ./prisma
+COPY src ./src
+COPY Cargo.* ./
+COPY build.rs .
+COPY --from=prisma-cli-builder /usr/local/cargo/bin/cargo-prisma /usr/local/bin/cargo-prisma
 RUN cargo install --locked --path .
 
 
