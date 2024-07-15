@@ -41,7 +41,9 @@ async fn main() -> Result<(), String> {
     let rocket = rocket::build();
     init_router(rocket)
         .manage(key_store)
-        .manage(Mutex::new(IntrastekState::default()))
+        .manage(IntrastekState {
+            db: Arc::new(db::new_client().await.expect("Failed to create db client")),
+        })
         .attach(cors.to_cors().unwrap())
         .launch()
         .await
