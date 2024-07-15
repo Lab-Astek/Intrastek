@@ -8,7 +8,92 @@ generator client {
     output   = "../src/db.rs"
 }
 
-model User {
-    id          String @id
-    displayName String
+model FollowUp {
+    count   Float
+    astekId String @id
+    astek   Astek  @relation(fields: [astekId], references: [id])
+}
+
+model Bootstrap {
+    count   Float
+    astekId String @id
+    astek   Astek  @relation(fields: [astekId], references: [id])
+}
+
+model Review {
+    count   Float
+    astekId String @id
+    astek   Astek  @relation(fields: [astekId], references: [id])
+}
+
+model Keynote {
+    count   Float
+    astekId String @id
+    astek   Astek  @relation(fields: [astekId], references: [id])
+}
+
+model Surveillance {
+    count   Float
+    astekId String @id
+    astek   Astek  @relation(fields: [astekId], references: [id])
+}
+
+model Permanence {
+    count   Float
+    astekId String @id
+    astek   Astek  @relation(fields: [astekId], references: [id])
+}
+
+model Astek {
+    id              String            @id @unique
+    FollowUp        FollowUp[]
+    Bootstrap       Bootstrap[]
+    Review          Review[]
+    Keynote         Keynote[]
+    Surveillance    Surveillance[]
+    Permanence      Permanence[]
+    Indisponibility Indisponibility[]
+}
+
+enum ActivityType {
+    FollowUp
+    Bootstrap
+    Review
+    Keynote
+    Surveillance
+    Permanence
+}
+
+enum Module {
+    Psu
+    Mul
+    Mat
+    Web
+    Aia
+}
+
+model Activity {
+    id            String       @id
+    type          ActivityType
+    start         DateTime
+    end           DateTime
+    name          String
+    module        Module?
+    needed_asteks Int
+}
+
+model IndisponibilityType {
+    id      Int             @id
+    indi    Indisponibility @relation(fields: [id], references: [id])
+    private Boolean
+    type    ActivityType?
+}
+
+model Indisponibility {
+    id      Int                   @id
+    astekId String
+    astek   Astek                 @relation(fields: [astekId], references: [id])
+    start   DateTime
+    end     DateTime
+    type    IndisponibilityType[]
 }
