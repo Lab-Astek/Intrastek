@@ -56,20 +56,27 @@ pub async fn create_activity(
         .await
     {
         Ok(_) => Ok(()),
-        Err(_) => {
-            error!("Failed to create activity");
+        Err(e) => {
+            error!("Failed to create activity with error {e}");
             return Err(Box::new(InternalError));
         }
     }?;
 
-    // db.activity()
-    //     .update(
-    //         activity::id::equals(new_uuid.to_string()),
-    //         vec![activity::module::set(activity.module)],
-    //     )
-    //     .exec()
-    //     .await
-    //     .unwrap();
+    match db
+        .activity()
+        .update(
+            activity::id::equals(new_uuid.to_string()),
+            vec![activity::module::set(activity.module)],
+        )
+        .exec()
+        .await
+    {
+        Ok(_) => Ok(()),
+        Err(e) => {
+            error!("Failed to create activity with error {e}");
+            return Err(Box::new(InternalError));
+        }
+    }?;
     Ok(new_uuid)
 }
 
@@ -78,8 +85,8 @@ pub async fn get_activities(
 ) -> Result<Vec<ActivityInfos>, Box<dyn IntrastekError>> {
     match db.activity().find_many(vec![]).exec().await {
         Ok(activities) => Ok(activities.into_iter().map(|a| a.into()).collect()),
-        Err(_) => {
-            error!("Failed to get activities");
+        Err(e) => {
+            error!("Failed to get activities {e}");
             Err(Box::new(InternalError))
         }
     }
