@@ -2,3 +2,4 @@
 .idea
 nodes_modules
 .eslintrc.json
+.env
