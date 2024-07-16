@@ -2,13 +2,12 @@ use jsonwebtoken::{decode, decode_header, Algorithm, DecodingKey, Validation};
 use rocket::{
     http::Status,
     request::{FromRequest, Outcome, Request},
-    State,
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use log::{error, info, debug, warn};
+use log::{debug, error, info, warn};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Claims {

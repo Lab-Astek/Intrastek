@@ -2,12 +2,11 @@ use rocket::{delete, get, post, routes, serde::json::Json, Build, Rocket, State}
 use uuid::Uuid;
 
 use crate::{
-    astek::{indisponibility::Indisponibility, Astek},
-    helpers::{request::Request, response::Response, AlreadyExists, InternalError},
+    astek::indisponibility::Indisponibility,
+    helpers::{request::Request, response::Response},
     middlewares::{
-        astek::{self, create_astek},
-        auth::{AuthenticatedUser, KeyStore},
-        get_state_mut,
+        astek::{self, create_astek, AstekInfos},
+        auth::AuthenticatedUser,
     },
     state::IntrastekState,
 };
@@ -44,19 +43,27 @@ async fn register_asteks(
 
 /// Get all asteks registered
 #[get("/")]
-async fn get_asteks(state: &State<IntrastekState>) -> Response<Vec<AstekInfos>, String> {
+async fn get_asteks(
+    _user: AuthenticatedUser,
+    state: &State<IntrastekState>,
+) -> Response<Vec<AstekInfos>, String> {
     astek::get_asteks(&state.db).await.into()
 }
 
 /// Get a specific astek by its id
 #[get("/<id>")]
-async fn get_astek(id: Uuid, state: &State<IntrastekState>) -> Response<AstekInfos, String> {
+async fn get_astek(
+    _user: AuthenticatedUser,
+    id: Uuid,
+    state: &State<IntrastekState>,
+) -> Response<AstekInfos, String> {
     astek::get_astek(&state.db, id).await.into()
 }
 
 /// Add an indisponibility to a specific astek
 #[post("/<id>", data = "<req>")]
 async fn add_indisponibility(
+    _user: AuthenticatedUser,
     id: Uuid,
     req: Json<Request<Indisponibility>>,
     state: &State<IntrastekState>,
@@ -68,7 +75,11 @@ async fn add_indisponibility(
 
 /// Delete a specific astek by its id
 #[delete("/<id>")]
-async fn delete_astek(id: Uuid, state: &State<IntrastekState>) -> Response<&'static str, String> {
+async fn delete_astek(
+    _user: AuthenticatedUser,
+    id: Uuid,
+    state: &State<IntrastekState>,
+) -> Response<&'static str, String> {
     astek::delete_astek(&state.db, id)
         .await
         .map(|_| "Ok")
@@ -80,6 +91,7 @@ async fn delete_astek(id: Uuid, state: &State<IntrastekState>) -> Response<&'sta
 async fn delete_indisponibility(
     id: Uuid,
     indisponibility_id: i32,
+    _user: AuthenticatedUser,
     state: &State<IntrastekState>,
 ) -> Response<&'static str, String> {
     astek::indisponibility::remove_indisponibility_from_astek(id, indisponibility_id, &state.db)
