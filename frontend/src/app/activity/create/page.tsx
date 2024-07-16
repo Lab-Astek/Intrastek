@@ -44,7 +44,7 @@ export default function Home() {
   }
 
   function handleChangeActivityType(
-    event: SelectChangeEvent<HTMLInputElement>,
+    event: SelectChangeEvent<HTMLInputElement>
   ) {
     setActivityTypeIdx(parseInt(event.target.value as string));
   }
@@ -88,7 +88,8 @@ export default function Home() {
       asteks,
       activities[activityTypeIdx],
       modules[moduleIdx],
-      { start: startDate, end: endDate },
+      startDate,
+      endDate
     );
   }
 

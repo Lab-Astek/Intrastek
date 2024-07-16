@@ -9,13 +9,14 @@ import FolderIcon from "@mui/icons-material/Folder";
 import List from "@mui/material/List";
 import { useEffect, useState } from "react";
 import Page from "@/components/page";
+import { Activity } from "@/types/activity";
 
 export default function Home() {
-  let [activitiesIds, setActivitiesIds] = useState<UUID[]>([]);
+  let [activities, setActivities] = useState<Activity[]>([]);
 
   useEffect(() => {
     get("activities").then((response) => {
-      setActivitiesIds(response.data);
+      setActivities(response.data);
     });
   }, []);
 
@@ -24,7 +25,7 @@ export default function Home() {
       <h1>Activities</h1>
       {
         <List>
-          {activitiesIds.map((id) => (
+          {activities.map((activity) => (
             <ListItem>
               <ButtonWrapper>
                 <ListItemAvatar>
@@ -32,7 +33,7 @@ export default function Home() {
                     <FolderIcon />
                   </Avatar>
                 </ListItemAvatar>
-                <a href={`/activity/${id}`}>{id}</a>
+                <a href={`/activity/${activity.id}`}>{activity.name}</a>
               </ButtonWrapper>
             </ListItem>
           ))}
@@ -40,12 +41,15 @@ export default function Home() {
       }
       <ButtonWrapper
         onClick={async () => {
-          let ids: UUID[] = (await get("activities")).data;
-          setActivitiesIds(ids);
-          console.log(ids);
+          get("activities").then((response) => {
+            setActivities(response.data);
+          });
         }}
       >
         Refresh
+      </ButtonWrapper>
+      <ButtonWrapper>
+        <a href="/activity/create">Create an activity</a>
       </ButtonWrapper>
     </Page>
   );
