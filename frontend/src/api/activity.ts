@@ -29,7 +29,7 @@ export async function createActivity(
   module: string,
   start: Date,
   end: Date
-) {
+): Promise<AxiosResponse<UUID, any>> {
   let data: Activity = {
     id: "1-1-1-1-1",
     name: name,
@@ -40,11 +40,11 @@ export async function createActivity(
     end: end,
   };
 
-  return post("activities", data).then();
+  return post<UUID>("activities", data).then();
 }
 
 export async function getActivity(
   uuid: UUID
 ): Promise<AxiosResponse<Activity, any>> {
-  return get(`activities/${uuid}`);
+  return get<Activity>(`activities/${uuid}`);
 }
