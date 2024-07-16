@@ -1,5 +1,3 @@
-use std::sync::{Arc, Mutex, RwLock};
-
 use rocket::{delete, get, post, routes, serde::json::Json, Build, Rocket, State};
 use uuid::Uuid;
 
@@ -46,20 +44,14 @@ async fn register_asteks(
 
 /// Get all asteks registered
 #[get("/")]
-async fn get_asteks(state: &State<IntrastekState>) -> Response<Vec<Astek>, String> {
-    astek::get_asteks(&state.db)
-        .await
-        .map(|v| v.iter().map(|a| Astek::from(a)).collect())
-        .into()
+async fn get_asteks(state: &State<IntrastekState>) -> Response<Vec<db::astek::Data>, String> {
+    astek::get_asteks(&state.db).await.into()
 }
 
 /// Get a specific astek by its id
 #[get("/<id>")]
-async fn get_astek(id: Uuid, state: &State<IntrastekState>) -> Response<Astek, String> {
-    astek::get_astek(&state.db, id)
-        .await
-        .map(|a| Astek::from(&a))
-        .into()
+async fn get_astek(id: Uuid, state: &State<IntrastekState>) -> Response<db::astek::Data, String> {
+    astek::get_astek(&state.db, id).await.into()
 }
 
 /// Add an indisponibility to a specific astek

@@ -2,13 +2,13 @@ use std::fmt::{self, Display, Formatter};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{activity::Activities, interval::Interval};
+use crate::{db::ActivityType, interval::Interval};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub enum IndisponibilityType {
     #[default]
     Private,
-    Activity(Activities),
+    Activity(ActivityType),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -32,7 +32,7 @@ impl Display for IndisponibilityType {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             IndisponibilityType::Private => write!(f, "Private"),
-            IndisponibilityType::Activity(act) => write!(f, "{}", act),
+            IndisponibilityType::Activity(act) => write!(f, "{:?}", act),
         }
     }
 }

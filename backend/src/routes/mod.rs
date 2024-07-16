@@ -1,8 +1,6 @@
-use std::sync::Mutex;
-
 // use activities::load_activities;
 use asteks::load_asteks;
-use rocket::{get, put, routes, Build, Rocket, State};
+use rocket::{get, routes, Build, Rocket, State};
 
 use crate::state::IntrastekState;
 

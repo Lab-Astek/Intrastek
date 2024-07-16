@@ -5,14 +5,12 @@ use rocket::http::Method;
 use rocket_cors::{AllowedOrigins, CorsOptions};
 use routes::init_router;
 use state::IntrastekState;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
-mod activity;
 mod astek;
 mod helpers;
 mod interval;
 mod middlewares;
-mod module;
 mod planner;
 mod routes;
 mod state;
