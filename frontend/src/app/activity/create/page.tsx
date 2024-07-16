@@ -11,8 +11,8 @@ import { createActivity, getActivity } from "@/api/activity";
 import { Astek } from "@/types/astek";
 import Stack from "@mui/material/Stack";
 import DatePicker from "@/components/inputs/datePicker";
-import Bar from "@/components/bar";
 import Page from "@/components/page";
+import { useRouter } from "next/navigation";
 
 const activities = [
   ActivityType.Permanence,
@@ -26,6 +26,8 @@ const activities = [
 const modules = ["Cpe", "Psu", "Mul", "Mat", "Web", "Aia", "None"];
 
 export default function Home() {
+  const router = useRouter();
+
   let [name, setName] = useState<string>("");
   let [asteks, setAsteks] = useState<number>(0);
   let [activityTypeIdx, setActivityTypeIdx] = useState<number>(0);
@@ -90,7 +92,9 @@ export default function Home() {
       modules[moduleIdx],
       startDate,
       endDate
-    );
+    ).then((response) => {
+      router.push(`/activity/${response.data}`);
+    });
   }
 
   return (

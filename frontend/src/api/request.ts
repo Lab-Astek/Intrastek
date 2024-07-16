@@ -5,7 +5,11 @@ import { env } from "process";
 const API_URL: string = env.API_URL || "http://localhost";
 const API_PORT: string = env.API_PORT || "8000";
 
-async function request(method: string, endpoint: string, data: any = {}) {
+async function request<T>(
+  method: string,
+  endpoint: string,
+  data: any = {}
+): Promise<AxiosResponse<T>> {
   let config = {
     method: method,
     maxBodyLength: Infinity,
@@ -14,7 +18,7 @@ async function request(method: string, endpoint: string, data: any = {}) {
     data: data,
   };
 
-  return axios.request(config);
+  return axios.request<T>(config);
 }
 
 export async function log_auth(method: string, endpoint: string, token: string, data: any = {}) {
@@ -54,6 +58,6 @@ export async function post(endpoint: string, data: any) {
   return request("POST", endpoint, { data: data });
 }
 
-export async function get(endpoint: string) {
-  return request("GET", endpoint);
+export async function get<T>(endpoint: string): Promise<AxiosResponse<T>> {
+  return request<T>("GET", endpoint);
 }
