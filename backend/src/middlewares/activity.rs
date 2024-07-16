@@ -12,6 +12,7 @@ use crate::{
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ActivityInfos {
+    pub id: String,
     pub r#type: ActivityType,
     pub start: DateTime<FixedOffset>,
     pub end: DateTime<FixedOffset>,
@@ -23,6 +24,7 @@ pub struct ActivityInfos {
 impl From<db::activity::Data> for ActivityInfos {
     fn from(value: db::activity::Data) -> Self {
         ActivityInfos {
+            id: value.id,
             r#type: value.r#type,
             start: value.start,
             end: value.end,
@@ -60,14 +62,14 @@ pub async fn create_activity(
         }
     }?;
 
-    db.activity()
-        .update(
-            activity::id::equals(new_uuid.to_string()),
-            vec![activity::module::set(activity.module)],
-        )
-        .exec()
-        .await
-        .unwrap();
+    // db.activity()
+    //     .update(
+    //         activity::id::equals(new_uuid.to_string()),
+    //         vec![activity::module::set(activity.module)],
+    //     )
+    //     .exec()
+    //     .await
+    //     .unwrap();
     Ok(new_uuid)
 }
 
