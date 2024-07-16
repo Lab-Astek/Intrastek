@@ -1,4 +1,4 @@
-import { ActivitiyType, Activity, Module } from "@/types/activity";
+import { Activity, ActivityType, Module } from "@/types/activity";
 import { post, get } from "./request";
 import { UUID } from "crypto";
 import { AxiosResponse } from "axios";

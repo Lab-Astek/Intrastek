@@ -3,7 +3,10 @@ use uuid::Uuid;
 
 use crate::{
     helpers::{request::Request, response::Response},
-    middlewares::activity::{self, ActivityInfos},
+    middlewares::{
+        activity::{self, ActivityInfos},
+        auth::AuthenticatedUser,
+    },
     state::IntrastekState,
 };
 
@@ -16,7 +19,10 @@ pub fn load_activities(rocket: Rocket<Build>) -> Rocket<Build> {
 
 /// Get all activities registered
 #[get("/")]
-async fn get_activities(state: &State<IntrastekState>) -> Response<Vec<ActivityInfos>, String> {
+async fn get_activities(
+    _user: AuthenticatedUser,
+    state: &State<IntrastekState>,
+) -> Response<Vec<ActivityInfos>, String> {
     activity::get_activities(&state.db).await.into()
 }
 
@@ -25,6 +31,7 @@ async fn get_activities(state: &State<IntrastekState>) -> Response<Vec<ActivityI
 async fn add_activity(
     activity: Json<Request<ActivityInfos>>,
     state: &State<IntrastekState>,
+    _user: AuthenticatedUser,
 ) -> Response<Uuid, String> {
     activity::create_activity(activity.data.clone(), &state.db)
         .await
@@ -33,6 +40,10 @@ async fn add_activity(
 
 /// Get a specific activity
 #[get("/<id>")]
-async fn get_activity(id: Uuid, state: &State<IntrastekState>) -> Response<ActivityInfos, String> {
+async fn get_activity(
+    id: Uuid,
+    state: &State<IntrastekState>,
+    _user: AuthenticatedUser,
+) -> Response<ActivityInfos, String> {
     activity::get_activity(&state.db, id).await.into()
 }
