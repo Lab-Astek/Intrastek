@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use log::{error, info, warn};
+use log::{error, info, debug, warn};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Claims {
@@ -34,7 +34,6 @@ pub struct Jwk {
     n: String,
     e: String,
     kty: String,
-    // #[serde(default)]
     alg: Option<String>,
 }
 
@@ -65,7 +64,7 @@ impl KeyStore {
 async fn fetch_jwks() -> Result<Jwks, reqwest::Error> {
     let jwks_uri = "https://login.microsoftonline.com/common/discovery/keys";
     let jwks: Jwks = reqwest::get(jwks_uri).await?.json::<Jwks>().await?;
-    warn!("Fetched jwks: {:?}", jwks);
+    debug!("Fetched jwks: {:?}", jwks);
     Ok(jwks)
 }
 
@@ -102,7 +101,6 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
                 return Outcome::Error((Status::Unauthorized, ()));
             }
         };
-
         info!("Token header: {:?}", header);
 
         let kid = match header.kid {
