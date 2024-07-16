@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
+use indisponibility::IndisponibilityInfos;
 use log::error;
+use serde::Serialize;
 use uuid::Uuid;
 
 use crate::{
@@ -12,10 +14,36 @@ use crate::db;
 
 pub mod indisponibility;
 
+#[derive(Debug, Clone, Serialize)]
+pub struct AstekInfos {
+    pub id: String,
+    pub indisponibilities: Vec<IndisponibilityInfos>,
+}
+
+impl TryFrom<db::astek::Data> for AstekInfos {
+    type Error = Box<dyn IntrastekError>;
+
+    fn try_from(value: db::astek::Data) -> Result<Self, Self::Error> {
+        let indispos: Vec<IndisponibilityInfos> =
+            match value.indisponibility().map_err(|_| Box::new(InternalError)) {
+                Ok(indispos) => indispos,
+                Err(e) => return Err(e),
+            }
+            .iter()
+            .map(|i| IndisponibilityInfos::try_from(i.clone()))
+            .filter_map(Result::ok)
+            .collect();
+        Ok(AstekInfos {
+            id: value.id,
+            indisponibilities: indispos,
+        })
+    }
+}
+
 pub async fn create_astek(
     email: &String,
     db: &Arc<PrismaClient>,
-) -> Result<db::astek::Data, Box<dyn IntrastekError>> {
+) -> Result<AstekInfos, Box<dyn IntrastekError>> {
     let new_uuid = uuid::Uuid::new_v4();
 
     match db
@@ -24,7 +52,7 @@ pub async fn create_astek(
         .exec()
         .await
     {
-        Ok(new) => Ok(new),
+        Ok(new) => new.try_into(),
         Err(e) => {
             error!("Failed to create astek: {e}");
             Err(Box::new(InternalError))
@@ -34,9 +62,12 @@ pub async fn create_astek(
 
 pub async fn get_asteks(
     db: &Arc<PrismaClient>,
-) -> Result<Vec<db::astek::Data>, Box<dyn IntrastekError>> {
+) -> Result<Vec<AstekInfos>, Box<dyn IntrastekError>> {
     match db.astek().find_many(vec![]).exec().await {
-        Ok(asteks) => Ok(asteks),
+        Ok(asteks) => Ok(asteks
+            .into_iter()
+            .flat_map(|a| AstekInfos::try_from(a))
+            .collect()),
         Err(_) => {
             error!("Failed to get asteks");
             Err(Box::new(InternalError))
@@ -47,14 +78,14 @@ pub async fn get_asteks(
 pub async fn get_astek(
     db: &Arc<PrismaClient>,
     uuid: Uuid,
-) -> Result<astek::Data, Box<dyn IntrastekError>> {
+) -> Result<AstekInfos, Box<dyn IntrastekError>> {
     match db
         .astek()
         .find_unique(astek::id::equals(uuid.to_string()))
         .exec()
         .await
     {
-        Ok(Some(astek)) => Ok(astek),
+        Ok(Some(astek)) => astek.try_into(),
         _ => {
             error!("Failed to get astek {uuid}");
             Err(Box::new(NotFound { data: uuid }))

@@ -1,17 +1,39 @@
 use std::sync::Arc;
 
+use chrono::{DateTime, FixedOffset};
 use log::error;
 use prisma_client_rust::and;
+use serde::Serialize;
 use uuid::Uuid;
 
 use crate::{
     astek::indisponibility::Indisponibility,
     db::{
+        self,
         astek::{self},
         indisponibility, PrismaClient,
     },
     helpers::{InternalError, IntrastekError, NotFound},
 };
+
+#[derive(Debug, Clone, Serialize)]
+pub struct IndisponibilityInfos {
+    pub id: i32,
+    pub start: DateTime<FixedOffset>,
+    pub end: DateTime<FixedOffset>,
+}
+
+impl TryFrom<db::indisponibility::Data> for IndisponibilityInfos {
+    type Error = String;
+
+    fn try_from(value: db::indisponibility::Data) -> Result<Self, Self::Error> {
+        Ok(IndisponibilityInfos {
+            id: value.id,
+            start: value.start,
+            end: value.end,
+        })
+    }
+}
 
 pub async fn add_indisponibility_to_astek(
     id: Uuid,
