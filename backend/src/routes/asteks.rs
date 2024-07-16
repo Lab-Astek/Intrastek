@@ -44,13 +44,13 @@ async fn register_asteks(
 
 /// Get all asteks registered
 #[get("/")]
-async fn get_asteks(state: &State<IntrastekState>) -> Response<Vec<db::astek::Data>, String> {
+async fn get_asteks(state: &State<IntrastekState>) -> Response<Vec<AstekInfos>, String> {
     astek::get_asteks(&state.db).await.into()
 }
 
 /// Get a specific astek by its id
 #[get("/<id>")]
-async fn get_astek(id: Uuid, state: &State<IntrastekState>) -> Response<db::astek::Data, String> {
+async fn get_astek(id: Uuid, state: &State<IntrastekState>) -> Response<AstekInfos, String> {
     astek::get_astek(&state.db, id).await.into()
 }
 
