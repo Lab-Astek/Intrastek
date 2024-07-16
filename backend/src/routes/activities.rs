@@ -5,11 +5,9 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::{
-    activity::{Activities, Activity},
+    db::{ActivityType, Module},
     helpers::{request::Request, response::Response, InternalError},
     interval::Interval,
-    middlewares::{get_state, get_state_mut},
-    module::Module,
     state::IntrastekState,
 };
 
@@ -36,7 +34,7 @@ use crate::{
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ActivityRequest {
-    pub activity: Activities,
+    pub activity: ActivityType,
     pub interval: Interval,
     pub location: String,
     pub needed_asteks: u32,

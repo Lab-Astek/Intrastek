@@ -9,50 +9,56 @@ generator client {
 }
 
 model FollowUp {
+    id      String @id
     count   Float
-    astekId String @id
+    astekId String @unique
     astek   Astek  @relation(fields: [astekId], references: [id])
 }
 
 model Bootstrap {
+    id      String @id
     count   Float
-    astekId String @id
+    astekId String @unique
     astek   Astek  @relation(fields: [astekId], references: [id])
 }
 
 model Review {
+    id      String @id
     count   Float
-    astekId String @id
+    astekId String @unique
     astek   Astek  @relation(fields: [astekId], references: [id])
 }
 
 model Keynote {
+    id      String @id
     count   Float
-    astekId String @id
+    astekId String @unique
     astek   Astek  @relation(fields: [astekId], references: [id])
 }
 
 model Surveillance {
+    id      String @id
     count   Float
-    astekId String @id
+    astekId String @unique
     astek   Astek  @relation(fields: [astekId], references: [id])
 }
 
 model Permanence {
+    id      String @id
     count   Float
-    astekId String @id
+    astekId String @unique
     astek   Astek  @relation(fields: [astekId], references: [id])
 }
 
 model Astek {
     id              String            @id @unique
     email           String            @unique
-    FollowUp        FollowUp[]
-    Bootstrap       Bootstrap[]
-    Review          Review[]
-    Keynote         Keynote[]
-    Surveillance    Surveillance[]
-    Permanence      Permanence[]
+    FollowUp        FollowUp?
+    Bootstrap       Bootstrap?
+    Review          Review?
+    Keynote         Keynote?
+    Surveillance    Surveillance?
+    Permanence      Permanence?
     Indisponibility Indisponibility[]
 }
 
@@ -71,6 +77,7 @@ enum Module {
     Mat
     Web
     Aia
+    Cpe
 }
 
 model Activity {
