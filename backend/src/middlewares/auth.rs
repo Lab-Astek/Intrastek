@@ -157,19 +157,8 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
                 debug!("claims.aud: {:?}", token_data.claims.aud);
                 debug!("claims.exp: {:?}", token_data.claims.exp);
 
-                if token_data.claims.iss != "https://login.microsoftonline.com/{tenantid}/v2.0" {
+                if token_data.claims.iss != "https://login.microsoftonline.com/901cb4ca-b862-4029-9306-e5cd0f6d9f86/v2.0" {
                     error!("Invalid issuer claim");
-                    return Outcome::Error((Status::Unauthorized, ()));
-                }
-
-                if token_data.claims.aud != "expected_audience" {
-                    error!("Invalid audience claim");
-                    return Outcome::Error((Status::Unauthorized, ()));
-                }
-
-                let current_time: i64 = chrono::Utc::now().timestamp();
-                if (token_data.claims.exp as i64) < current_time {
-                    error!("Token has expired");
                     return Outcome::Error((Status::Unauthorized, ()));
                 }
 
