@@ -57,8 +57,20 @@ impl KeyStore {
         let keys = self.keys.read().await;
         for key in &keys.keys {
             if key.kid == kid {
-                debug!("Found matching key for kid: {}", kid);
-                return DecodingKey::from_rsa_components(&key.n, &key.e).ok();
+                debug!("Found matching key for kid:\n\t{}={}", kid, key.kid);
+                let alg = key.alg.clone().unwrap_or_else(|| {
+                    if key.kty == "RSA" {
+                        "RS256".to_string()
+                    } else {
+                        "none".to_string()
+                    }
+                });
+                if alg == "RS256" && key.kty == "RSA" {
+                    return DecodingKey::from_rsa_components(&key.n, &key.e).ok();
+                } else {
+                    warn!("Unsupported algorithm: {} for kid: {}", alg, kid);
+                    return None;
+                }
             }
         }
         warn!("No matching key found for kid: {}", kid);
@@ -69,9 +81,31 @@ impl KeyStore {
 async fn fetch_jwks() -> Result<Jwks, reqwest::Error> {
     let jwks_uri = "https://login.microsoftonline.com/common/discovery/v2.0/keys";
 
-    let jwks: Jwks = reqwest::get(jwks_uri).await?.json::<Jwks>().await?;
-    debug!("Fetched jwks: {:?}", jwks);
-    Ok(jwks)
+    let response = reqwest::get(jwks_uri).await;
+    match response {
+        Ok(resp) => {
+            if resp.status().is_success() {
+                let jwks = resp.json::<Jwks>().await;
+                match jwks {
+                    Ok(jwks) => {
+                        debug!("Fetched and parsed jwks: {:?}", jwks);
+                        Ok(jwks)
+                    }
+                    Err(err) => {
+                        error!("Error parsing JWKS response: {:?}", err);
+                        Err(err)
+                    }
+                }
+            } else {
+                error!("Failed to fetch JWKS, status: {:?}", resp.status());
+                Err(resp.error_for_status().unwrap_err())
+            }
+        }
+        Err(err) => {
+            error!("Network error fetching JWKS: {:?}", err);
+            Err(err)
+        }
+    }
 }
 
 #[rocket::async_trait]
@@ -118,9 +152,31 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
 
         let validation = get_validation();
         match decode::<Claims>(&token, &decoding_key, &validation) {
-            Ok(c) => {
-                info!("Token successfully decoded: {:?}", c.claims);
-                Outcome::Success(AuthenticatedUser { claims: c.claims })
+            Ok(token_data) => {
+                debug!("claims.iss: {:?}", token_data.claims.iss);
+                debug!("claims.aud: {:?}", token_data.claims.aud);
+                debug!("claims.exp: {:?}", token_data.claims.exp);
+
+                if token_data.claims.iss != "https://login.microsoftonline.com/{tenantid}/v2.0" {
+                    error!("Invalid issuer claim");
+                    return Outcome::Error((Status::Unauthorized, ()));
+                }
+
+                if token_data.claims.aud != "expected_audience" {
+                    error!("Invalid audience claim");
+                    return Outcome::Error((Status::Unauthorized, ()));
+                }
+
+                let current_time: i64 = chrono::Utc::now().timestamp();
+                if (token_data.claims.exp as i64) < current_time {
+                    error!("Token has expired");
+                    return Outcome::Error((Status::Unauthorized, ()));
+                }
+
+                info!("Token successfully decoded: {:?}", token_data.claims);
+                Outcome::Success(AuthenticatedUser {
+                    claims: token_data.claims,
+                })
             }
             Err(err) => {
                 error!("Error decoding token: {:?}", err);
@@ -156,7 +212,10 @@ fn extract_kid(token: &str) -> Result<String, JwtError> {
 fn get_validation() -> Validation {
     let mut validation = Validation::new(Algorithm::RS256);
     validation.validate_exp = true;
-    validation.set_issuer(&["expected_issuer"]);
-    validation.set_audience(&["expected_audience"]);
+    validation.set_issuer(&[
+        "https://login.microsoftonline.com/901cb4ca-b862-4029-9306-e5cd0f6d9f86/v2.0",
+    ]);
+    validation.set_audience(&["b5c2e510-4a17-4feb-b219-e55aa5b74144"]);
+    debug!("validation {:?}", validation);
     validation
 }
