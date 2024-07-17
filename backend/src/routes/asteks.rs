@@ -8,7 +8,7 @@ use crate::{
     helpers::{request::Request, response::Response, AlreadyExists, InternalError},
     middlewares::{
         astek,
-        auth::{AuthenticatedUser, KeyStore},
+        auth::AuthenticatedUser,
         get_state_mut,
     },
     state::IntrastekState,

@@ -1,14 +1,16 @@
-use jsonwebtoken::{decode, decode_header, Algorithm, DecodingKey, Validation};
+use jsonwebtoken::{
+    decode, decode_header, errors::Error as JwtError, errors::ErrorKind as JwtErrorKind, Algorithm,
+    DecodingKey, Validation,
+};
 use rocket::{
     http::Status,
     request::{FromRequest, Outcome, Request},
-    State,
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use log::{error, info, debug, warn};
+use log::{debug, error, info, warn};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Claims {
@@ -44,7 +46,8 @@ pub struct KeyStore {
 impl KeyStore {
     pub async fn new() -> Self {
         warn!("Creating a new KeyStore...");
-        let jwks = fetch_jwks().await.unwrap();
+
+        let jwks = fetch_jwks().await.expect("Failed to fetch JWKS");
         KeyStore {
             keys: RwLock::new(jwks),
         }
@@ -54,15 +57,18 @@ impl KeyStore {
         let keys = self.keys.read().await;
         for key in &keys.keys {
             if key.kid == kid {
-                return Some(DecodingKey::from_rsa_components(&key.n, &key.e).unwrap());
+                debug!("Found matching key for kid: {}", kid);
+                return DecodingKey::from_rsa_components(&key.n, &key.e).ok();
             }
         }
+        warn!("No matching key found for kid: {}", kid);
         None
     }
 }
 
 async fn fetch_jwks() -> Result<Jwks, reqwest::Error> {
-    let jwks_uri = "https://login.microsoftonline.com/common/discovery/keys";
+    let jwks_uri = "https://login.microsoftonline.com/common/discovery/v2.0/keys";
+
     let jwks: Jwks = reqwest::get(jwks_uri).await?.json::<Jwks>().await?;
     debug!("Fetched jwks: {:?}", jwks);
     Ok(jwks)
@@ -75,15 +81,11 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
     async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
         info!("Authenticating from request...");
 
-        let token = match request.headers().get_one("Authorization") {
-            Some(bearer) if bearer.starts_with("Bearer ") => {
-                bearer.trim_start_matches("Bearer ").to_string()
-            }
-            _ => {
-                warn!("Authorization header missing or improperly formatted");
-                return Outcome::Error((Status::Unauthorized, ()));
-            }
+        let token = match get_bearer_token(request) {
+            Some(token) => token,
+            None => return Outcome::Error((Status::Unauthorized, ())),
         };
+
         info!("Token received: {}", token);
 
         let key_store = match request.rocket().state::<Arc<KeyStore>>() {
@@ -94,19 +96,10 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
             }
         };
 
-        let header = match decode_header(&token) {
-            Ok(header) => header,
-            Err(_) => {
-                warn!("Invalid token header");
-                return Outcome::Error((Status::Unauthorized, ()));
-            }
-        };
-        info!("Token header: {:?}", header);
-
-        let kid = match header.kid {
-            Some(kid) => kid,
-            None => {
-                warn!("Token kid is missing");
+        let kid = match extract_kid(&token) {
+            Ok(kid) => kid,
+            Err(err) => {
+                error!("Error extracting kid: {}", err);
                 return Outcome::Error((Status::Unauthorized, ()));
             }
         };
@@ -114,7 +107,7 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
 
         let decoding_key = match key_store.get_decoding_key(&kid).await {
             Some(key) => {
-                info!("Using decoding key for kid: {}", kid);
+                debug!("Using decoding key for kid: {}", kid);
                 key
             }
             None => {
@@ -123,11 +116,7 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
             }
         };
 
-        let mut validation = Validation::new(Algorithm::RS256);
-        validation.validate_exp = true;
-        validation.set_issuer(&["expected_issuer"]);
-        validation.set_audience(&["expected_audience"]);
-
+        let validation = get_validation();
         match decode::<Claims>(&token, &decoding_key, &validation) {
             Ok(c) => {
                 info!("Token successfully decoded: {:?}", c.claims);
@@ -139,4 +128,35 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
             }
         }
     }
+}
+
+fn get_bearer_token(request: &Request<'_>) -> Option<String> {
+    request
+        .headers()
+        .get_one("Authorization")
+        .and_then(|bearer| {
+            if bearer.starts_with("Bearer ") {
+                Some(bearer.trim_start_matches("Bearer ").to_string())
+            } else {
+                warn!("Authorization header missing or improperly formatted");
+                None
+            }
+        })
+}
+
+fn extract_kid(token: &str) -> Result<String, JwtError> {
+    let header = decode_header(token)?;
+    header.kid.ok_or_else(|| {
+        JwtError::from(JwtErrorKind::MissingRequiredClaim(String::from(
+            "Kid is missing",
+        )))
+    })
+}
+
+fn get_validation() -> Validation {
+    let mut validation = Validation::new(Algorithm::RS256);
+    validation.validate_exp = true;
+    validation.set_issuer(&["expected_issuer"]);
+    validation.set_audience(&["expected_audience"]);
+    validation
 }
