@@ -1,7 +1,5 @@
 "use client";
-import { get } from "@/api/request";
 import ButtonWrapper from "@/components/button";
-import { UUID } from "crypto";
 import ListItem from "@mui/material/ListItem";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
@@ -11,6 +9,7 @@ import { useEffect, useState } from "react";
 import Page from "@/components/page";
 import { Activity } from "@/types/activity";
 import { useAccount, useMsal } from "@azure/msal-react";
+import { getActivities } from "@/api/activity";
 
 export default function Home() {
   let [activities, setActivities] = useState<Activity[]>([]);
@@ -18,7 +17,7 @@ export default function Home() {
   const user = useAccount(accounts[0] || {});
 
   useEffect(() => {
-    get<Activity[]>("activities", user).then((response) => {
+    getActivities(user).then((response) => {
       setActivities(response.data);
     });
   }, []);
@@ -44,7 +43,7 @@ export default function Home() {
       }
       <ButtonWrapper
         onClick={async () => {
-          get<Activity[]>("activities", user).then((response) => {
+          getActivities(user).then((response) => {
             setActivities(response.data);
           });
         }}

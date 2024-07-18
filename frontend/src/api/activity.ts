@@ -48,6 +48,10 @@ export async function createActivity(
 export async function getActivity(
   user: AccountInfo | null,
   uuid: UUID
-): Promise<AxiosResponse<Activity, any>> {
+): Promise<AxiosResponse<Activity>> {
   return get<Activity>(`activities/${uuid}`, null);
+}
+
+export async function getActivities(user: AccountInfo | null) {
+  return get<Activity[]>("activities", user);
 }

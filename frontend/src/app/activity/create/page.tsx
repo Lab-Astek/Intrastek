@@ -7,12 +7,12 @@ import Box from "@mui/material/Box";
 import { SelectChangeEvent } from "@mui/material/Select";
 import SelectWrapper from "@/components/inputs/select";
 import ButtonWrapper from "@/components/button";
-import { createActivity, getActivity } from "@/api/activity";
-import { Astek } from "@/types/astek";
+import { createActivity } from "@/api/activity";
 import Stack from "@mui/material/Stack";
 import DatePicker from "@/components/inputs/datePicker";
 import Page from "@/components/page";
 import { useRouter } from "next/navigation";
+import { useAccount, useMsal } from "@azure/msal-react";
 
 const activities = [
   ActivityType.Permanence,
@@ -27,6 +27,8 @@ const modules = ["Cpe", "Psu", "Mul", "Mat", "Web", "Aia", "None"];
 
 export default function Home() {
   const router = useRouter();
+  const { accounts } = useMsal();
+  const user = useAccount(accounts[0] || {});
 
   let [name, setName] = useState<string>("");
   let [asteks, setAsteks] = useState<number>(0);
@@ -34,8 +36,6 @@ export default function Home() {
   let [moduleIdx, setModuleIdx] = useState<number>(0);
   let [startDate, setStartDate] = useState<Date>();
   let [endDate, setEndDate] = useState<Date>();
-
-  let [result, setResult] = useState<Astek>();
 
   function handleChangeName(event: ChangeEvent<HTMLInputElement>) {
     setName(event.currentTarget.value);
@@ -86,6 +86,7 @@ export default function Home() {
   function handleSubmit() {
     if (startDate === undefined || endDate === undefined) return;
     createActivity(
+      user,
       name,
       asteks,
       activities[activityTypeIdx],

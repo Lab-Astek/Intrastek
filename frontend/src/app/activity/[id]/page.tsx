@@ -13,6 +13,7 @@ import Page from "@/components/page";
 import Error from "next/error";
 import { getActivity } from "@/api/activity";
 import { UUID } from "crypto";
+import { useAccount, useMsal } from "@azure/msal-react";
 
 function valTranslate(value: any) {
   console.log(value);
@@ -29,9 +30,11 @@ function valTranslate(value: any) {
 export default function Home({ params }: { params: { id: UUID } }) {
   let [activity, setActivity] = useState<Activity | undefined>(undefined);
   let [error, setError] = useState<boolean>(false);
+  const { accounts } = useMsal();
+  const user = useAccount(accounts[0] || {});
 
   useEffect(() => {
-    getActivity(params.id)
+    getActivity(user, params.id)
       .then((response) => {
         setActivity(response.data);
       })
