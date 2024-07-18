@@ -97,3 +97,14 @@ model Indisponibility {
     start   DateTime
     end     DateTime
 }
+
+enum Permissions {
+    Ape
+    Astek
+    None
+}
+
+model User {
+    email       String      @id
+    permissions Permissions @default(None)
+}
