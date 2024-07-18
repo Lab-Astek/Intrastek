@@ -1,7 +1,7 @@
-import { ActivityType, ActivityRequest, Module } from "@/types/activity";
+import { Activity, ActivityType, Module } from "@/types/activity";
 import { post, get } from "./request";
 import { UUID } from "crypto";
-import { Interval } from "@/types/interval";
+import { AxiosResponse } from "axios";
 
 function moduleFromString(module: string): Module | undefined {
   switch (module) {
@@ -23,23 +23,28 @@ function moduleFromString(module: string): Module | undefined {
 }
 
 export async function createActivity(
-  location: string,
+  name: string,
   asteks: number,
   activityType: ActivityType,
   module: string,
-  interval: Interval,
-) {
-  let data: ActivityRequest = {
-    activity: activityType,
-    interval: interval,
-    location: location,
+  start: Date,
+  end: Date
+): Promise<AxiosResponse<UUID, any>> {
+  let data: Activity = {
+    id: "1-1-1-1-1",
+    name: name,
     needed_asteks: asteks,
+    type: activityType,
     module: moduleFromString(module),
+    start: start,
+    end: end,
   };
 
-  return post("activities", data).then();
+  return post<UUID>("activities", data).then();
 }
 
-export async function getActivity(uuid: UUID) {
-  return get(`activities/${uuid}`);
+export async function getActivity(
+  uuid: UUID
+): Promise<AxiosResponse<Activity, any>> {
+  return get<Activity>(`activities/${uuid}`);
 }

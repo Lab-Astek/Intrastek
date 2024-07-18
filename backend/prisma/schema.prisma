@@ -1,0 +1,99 @@
+datasource db {
+    provider = "mysql"
+    url      = env("INTRASTEK_DATABASE_URL")
+}
+
+generator client {
+    provider = "cargo prisma"
+    output   = "../src/db.rs"
+}
+
+model FollowUp {
+    id      String @id
+    count   Float
+    astekId String @unique
+    astek   Astek  @relation(fields: [astekId], references: [id])
+}
+
+model Bootstrap {
+    id      String @id
+    count   Float
+    astekId String @unique
+    astek   Astek  @relation(fields: [astekId], references: [id])
+}
+
+model Review {
+    id      String @id
+    count   Float
+    astekId String @unique
+    astek   Astek  @relation(fields: [astekId], references: [id])
+}
+
+model Keynote {
+    id      String @id
+    count   Float
+    astekId String @unique
+    astek   Astek  @relation(fields: [astekId], references: [id])
+}
+
+model Surveillance {
+    id      String @id
+    count   Float
+    astekId String @unique
+    astek   Astek  @relation(fields: [astekId], references: [id])
+}
+
+model Permanence {
+    id      String @id
+    count   Float
+    astekId String @unique
+    astek   Astek  @relation(fields: [astekId], references: [id])
+}
+
+model Astek {
+    id              String            @id @unique
+    email           String            @unique
+    FollowUp        FollowUp?
+    Bootstrap       Bootstrap?
+    Review          Review?
+    Keynote         Keynote?
+    Surveillance    Surveillance?
+    Permanence      Permanence?
+    Indisponibility Indisponibility[]
+}
+
+enum ActivityType {
+    FollowUp
+    Bootstrap
+    Review
+    Keynote
+    Surveillance
+    Permanence
+}
+
+enum Module {
+    Psu
+    Mul
+    Mat
+    Web
+    Aia
+    Cpe
+}
+
+model Activity {
+    id            String       @id
+    type          ActivityType
+    start         DateTime
+    end           DateTime
+    name          String
+    module        Module?
+    needed_asteks Int
+}
+
+model Indisponibility {
+    id      Int      @id @default(autoincrement())
+    astekId String
+    astek   Astek    @relation(fields: [astekId], references: [id])
+    start   DateTime
+    end     DateTime
+}

@@ -13,9 +13,10 @@ Get all the known asteks by the api.
 ### `Post /asteks`
 
 Body:
+
 ```json
 {
-    "data":"Uuid"
+  "data": "Uuid"
 }
 ```
 
@@ -28,20 +29,22 @@ Get the informations on an astek if the api knows him
 ### `Post /asteks/<uuid>`
 
 Body:
+
 ```json
 {
-    "data": {
-        "interval": {
-            "start": "timestamp",
-            "end": "timestamp"
-        },
-        "type": "Indisponibility Type"
-    }
+  "data": {
+    "interval": {
+      "start": "timestamp",
+      "end": "timestamp"
+    },
+    "type": "Indisponibility Type"
+  }
 }
 ```
 
 Timestamps are following the `ISO 8601`
 Indisponibility Type is one of :
+
 - `"Private"`
 - `{"activity":"FollowUp"}`
 - `{"activity":"Bootstrap"}`

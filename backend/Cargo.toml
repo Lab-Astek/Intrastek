@@ -2,6 +2,7 @@
 name = "IntrastekApi"
 version = "0.1.0"
 edition = "2021"
+build = "build.rs"
 
 [dependencies]
 chrono = { version = "0.4.38", features = ["serde"] }
@@ -15,3 +16,9 @@ uuid = { version = "1.9.1", features = ["serde", "v4"] }
 reqwest = { version = "0.12.5", features = ["json"] }
 jsonwebtoken = "9.3.0"
 tokio = "1.0"
+
+[dependencies.prisma-client-rust]
+git = "https://github.com/Brendonovich/prisma-client-rust"
+tag = "0.6.11"
+default-features = false
+features = ["mysql"]

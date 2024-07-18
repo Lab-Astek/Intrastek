@@ -1,6 +1,5 @@
 "use client";
 
-import { get } from "@/api/request";
 import { Activity } from "@/types/activity";
 import { useEffect, useState } from "react";
 import Paper from "@mui/material/Paper";
@@ -12,23 +11,27 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Page from "@/components/page";
 import Error from "next/error";
+import { getActivity } from "@/api/activity";
+import { UUID } from "crypto";
 
 function valTranslate(value: any) {
-  if (typeof value === "object") {
+  console.log(value);
+  if (typeof value === "object" && value !== null) {
     if ("start" in value) {
       return `${value.start} - ${value.end}`;
     }
     return JSON.stringify(value);
   }
+  if (value === null) return "null";
   return value.toString();
 }
 
-export default function Home({ params }: { params: { id: string } }) {
+export default function Home({ params }: { params: { id: UUID } }) {
   let [activity, setActivity] = useState<Activity | undefined>(undefined);
   let [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
-    get(`activities/${params.id}`)
+    getActivity(params.id)
       .then((response) => {
         setActivity(response.data);
       })

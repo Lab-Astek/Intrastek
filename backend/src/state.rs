@@ -1,18 +1,16 @@
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
-use crate::{astek::Astek, planner::Planner};
+use crate::db::{self};
 
 #[derive(Debug, Clone)]
 pub struct IntrastekState {
-    pub planner: Planner,
-    pub asteks: Vec<Arc<RwLock<Astek>>>,
+    pub db: Arc<db::PrismaClient>,
 }
 
-impl Default for IntrastekState {
-    fn default() -> Self {
+impl IntrastekState {
+    pub async fn default() -> Self {
         IntrastekState {
-            planner: Planner::new(),
-            asteks: Vec::new(),
+            db: Arc::new(db::new_client().await.expect("Failed to create db client")),
         }
     }
 }

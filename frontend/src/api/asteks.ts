@@ -1,30 +1,33 @@
 import { UUID } from "crypto";
-import { post, get } from "./request";
-import { Indisponibility } from "@/types/astek";
+import { post, get } from "@/api/request";
+import { Astek, Indisponibility } from "@/types/astek";
+import { AxiosResponse } from "axios";
 
-export async function getAstek(id: UUID) {
-  return get(`asteks/${id}`);
+export async function getAstek(id: UUID): Promise<AxiosResponse<Astek>> {
+  return get<Astek>(`asteks/${id}`);
 }
 
-export async function getAsteks() {
-  return get("asteks");
+export async function getAsteks(): Promise<AxiosResponse<Astek[]>> {
+  return get<Astek[]>("asteks");
 }
 
-export async function createAstek(id: UUID) {
-  return post("asteks", id);
+export async function createAstek(id: UUID): Promise<AxiosResponse<Astek>> {
+  return post<Astek>("asteks", id);
 }
 
 export async function addIndisponibility(
   id: UUID,
   indisponibility: Indisponibility
-) {
-  return post(`asteks/${id}`, indisponibility);
+): Promise<AxiosResponse<number>> {
+  return post<number>(`asteks/${id}`, indisponibility);
 }
 
 export async function getIndisponibilities(id: UUID) {
-  return get(`asteks/${id}/indisponibilities`);
+  return get<Indisponibility>(`asteks/${id}/indisponibilities`);
 }
 
 export async function getIndisponibility(id: UUID, indisponibilityId: UUID) {
-  return get(`asteks/${id}/indisponibilities/${indisponibilityId}`);
+  return get<Indisponibility>(
+    `asteks/${id}/indisponibilities/${indisponibilityId}`
+  );
 }

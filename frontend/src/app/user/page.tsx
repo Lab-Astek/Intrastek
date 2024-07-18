@@ -50,7 +50,8 @@ export default function Home() {
 
     addIndisponibility(TEST_ID, {
       type: IndisponibilityType.Private,
-      interval: { start: event.start, end: event.end },
+      start: event.start,
+      end: event.end,
     }).then((response) => {
       setEvents([
         ...events,
@@ -83,8 +84,8 @@ export default function Home() {
           return {
             _id: idx.toString(),
             description: idx.toString(),
-            start: new Date(indis.interval.start),
-            end: new Date(indis.interval.end),
+            start: new Date(indis.start),
+            end: new Date(indis.end),
             type: indis.type,
           };
         });

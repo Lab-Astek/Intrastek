@@ -1,14 +1,13 @@
 import { UUID } from "crypto";
-import { Interval } from "./interval";
 
 export type Activity = {
   id: UUID;
-  activity: ActivityType;
-  interval: Interval;
-  location: string;
+  type: ActivityType;
+  start: Date;
+  end: Date;
+  name: string;
   needed_asteks: number;
   module?: Module;
-  asteks: UUID[];
 };
 
 export enum ActivityType {
@@ -28,11 +27,3 @@ export enum Module {
   Web = "Web",
   Aia = "Aia",
 }
-
-export type ActivityRequest = {
-  activity: ActivityType;
-  interval: Interval;
-  location: string;
-  needed_asteks: number;
-  module?: Module;
-};

@@ -1,31 +1,30 @@
 services:
   backend:
     build: ./backend
-    restart: always
+    restart: unless-stopped
     ports:
       - 8000:8000
+    depends_on:
+      - db
+    environment:
+      - INTRASTEK_DATABASE_URL=mysql://root:root@localhost:3306/intrastek-db
 
   frontend:
     build: ./frontend
-    restart: always
+    restart: unless-stopped
     ports:
       - 3000:3000
     environment:
       - API_PORT=8000
-  # db:
-  #   image: postgres:12-alpine
-  #   restart: always
-  #   ports:
-  #     - "5433:5432"
-  #   networks:
-  #     - back-tier
-  #   volumes:
-  #     - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
-  #     - db-data:/usr/share/db
-  #   environment:
-  #     - POSTGRES_PASSWORD=password
-  #     - POSTGRES_USER=postgres
 
-# volumes:
-#   db-data:
-#     driver: local
+  db:
+    image: mysql:9.0
+    command: --lower_case_table_names=1
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=intrastek-db
+      - MYSQL_USER=prisma
+      - MYSQL_PASSWORD=prisma
+    ports:
+      - '3306:3306'
