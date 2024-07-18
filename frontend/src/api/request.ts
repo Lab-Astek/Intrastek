@@ -1,3 +1,4 @@
+import { AccountInfo } from "@azure/msal-browser";
 import axios, { AxiosResponse } from "axios";
 import { AxiosRequestConfig, AxiosError } from "axios";
 import { env } from "process";
@@ -8,20 +9,28 @@ const API_PORT: string = env.API_PORT || "8000";
 async function request<T>(
   method: string,
   endpoint: string,
+  user: AccountInfo | null,
   data: any = {}
 ): Promise<AxiosResponse<T>> {
   let config = {
     method: method,
     maxBodyLength: Infinity,
     url: `${API_URL}:${API_PORT}/${endpoint}`,
-    headers: {},
+    headers: {
+      Authorization: `Bearer ${user?.idToken}`,
+      "X-email": user?.username,
+    },
     data: data,
   };
 
   return axios.request<T>(config);
 }
 
-export async function log_auth(method: string, endpoint: string, token: string) {
+export async function log_auth(
+  method: string,
+  endpoint: string,
+  token: string
+) {
   let config = {
     method: method,
     maxBodyLength: Infinity,
@@ -57,10 +66,21 @@ export async function log_auth(method: string, endpoint: string, token: string) 
   }
 }
 
-export async function post<T>(endpoint: string, data: any) {
-  return request<T>("POST", endpoint, { data: data });
+export async function post<T>(
+  endpoint: string,
+  data: any,
+  user: AccountInfo | null
+): Promise<AxiosResponse<T>> {
+  return request<T>("POST", endpoint, user, { data: data });
 }
 
-export async function get<T>(endpoint: string): Promise<AxiosResponse<T>> {
-  return request<T>("GET", endpoint);
+export async function get<T>(
+  endpoint: string,
+  user: AccountInfo | null
+): Promise<AxiosResponse<T>> {
+  return request<T>("GET", endpoint, user);
+}
+
+export async function ping(user: AccountInfo | null) {
+  return request<String>("GET", "ping", user);
 }

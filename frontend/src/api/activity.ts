@@ -2,6 +2,7 @@ import { Activity, ActivityType, Module } from "@/types/activity";
 import { post, get } from "./request";
 import { UUID } from "crypto";
 import { AxiosResponse } from "axios";
+import { AccountInfo } from "@azure/msal-browser";
 
 function moduleFromString(module: string): Module | undefined {
   switch (module) {
@@ -23,6 +24,7 @@ function moduleFromString(module: string): Module | undefined {
 }
 
 export async function createActivity(
+  user: AccountInfo | null,
   name: string,
   asteks: number,
   activityType: ActivityType,
@@ -40,11 +42,12 @@ export async function createActivity(
     end: end,
   };
 
-  return post<UUID>("activities", data).then();
+  return post<UUID>("activities", data, user).then();
 }
 
 export async function getActivity(
+  user: AccountInfo | null,
   uuid: UUID
 ): Promise<AxiosResponse<Activity, any>> {
-  return get<Activity>(`activities/${uuid}`);
+  return get<Activity>(`activities/${uuid}`, null);
 }

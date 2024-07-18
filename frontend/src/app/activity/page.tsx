@@ -10,12 +10,15 @@ import List from "@mui/material/List";
 import { useEffect, useState } from "react";
 import Page from "@/components/page";
 import { Activity } from "@/types/activity";
+import { useAccount, useMsal } from "@azure/msal-react";
 
 export default function Home() {
   let [activities, setActivities] = useState<Activity[]>([]);
+  const { accounts } = useMsal();
+  const user = useAccount(accounts[0] || {});
 
   useEffect(() => {
-    get("activities").then((response) => {
+    get<Activity[]>("activities", user).then((response) => {
       setActivities(response.data);
     });
   }, []);
@@ -41,7 +44,7 @@ export default function Home() {
       }
       <ButtonWrapper
         onClick={async () => {
-          get("activities").then((response) => {
+          get<Activity[]>("activities", user).then((response) => {
             setActivities(response.data);
           });
         }}

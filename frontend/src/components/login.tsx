@@ -1,5 +1,5 @@
 "use client";
-import { log_auth } from "@/api/request";
+import { ping } from "@/api/request";
 import { loginRequest } from "@/authConfig";
 import { useAccount, useIsAuthenticated, useMsal } from "@azure/msal-react";
 import { useEffect, useState } from "react";
@@ -36,8 +36,13 @@ function LoginButton() {
 
   async function sendTokenToBackend(token: string) {
     try {
+      const { accounts } = useMsal();
+      const account = useAccount(accounts[0] || {});
+      while (!account) {
+        console.log("Account not found, retrying...");
+      }
       console.log("Sending token to backend...");
-      const response = await log_auth("POST", "asteks", token);
+      const response = await ping(account);
       console.log("Success:", response.data);
     } catch (error) {
       console.error("Error:", error);
