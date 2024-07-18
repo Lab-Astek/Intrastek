@@ -84,7 +84,6 @@ function LoginAstekButton() {
   const status = useMsal();
   const isAuthenticated = useIsAuthenticated();
 
-
   if (isAuthenticated) {
         return <LogoutButton />;
   } else if (status !== InteractionStatus.Startup && status !== InteractionStatus.HandleRedirect) {

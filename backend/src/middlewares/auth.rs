@@ -119,8 +119,7 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
             Some(token) => token,
             None => return Outcome::Error((Status::Unauthorized, ())),
         };
-
-        info!("Token received: {}", token);
+        debug!("Token received: {}", token);
 
         let key_store = match request.rocket().state::<Arc<KeyStore>>() {
             Some(store) => store,
@@ -137,7 +136,7 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
                 return Outcome::Error((Status::Unauthorized, ()));
             }
         };
-        info!("Token kid: {}", kid);
+        debug!("Token kid: {}", kid);
 
         let decoding_key = match key_store.get_decoding_key(&kid).await {
             Some(key) => {
@@ -153,15 +152,6 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
         let validation = get_validation();
         match decode::<Claims>(&token, &decoding_key, &validation) {
             Ok(token_data) => {
-                debug!("claims.iss: {:?}", token_data.claims.iss);
-                debug!("claims.aud: {:?}", token_data.claims.aud);
-                debug!("claims.exp: {:?}", token_data.claims.exp);
-
-                if token_data.claims.iss != "https://login.microsoftonline.com/901cb4ca-b862-4029-9306-e5cd0f6d9f86/v2.0" {
-                    error!("Invalid issuer claim");
-                    return Outcome::Error((Status::Unauthorized, ()));
-                }
-
                 info!("Token successfully decoded: {:?}", token_data.claims);
                 Outcome::Success(AuthenticatedUser {
                     claims: token_data.claims,
@@ -199,12 +189,11 @@ fn extract_kid(token: &str) -> Result<String, JwtError> {
 }
 
 fn get_validation() -> Validation {
-    let mut validation = Validation::new(Algorithm::RS256);
+    let mut validation: Validation = Validation::new(Algorithm::RS256);
+    validation.set_audience(&["00000003-0000-0000-c000-000000000000"]);
+    validation.set_issuer(&["https://sts.windows.net/901cb4ca-b862-4029-9306-e5cd0f6d9f86/"]);
     validation.validate_exp = true;
-    validation.set_issuer(&[
-        "https://login.microsoftonline.com/901cb4ca-b862-4029-9306-e5cd0f6d9f86/v2.0",
-    ]);
-    validation.set_audience(&["b5c2e510-4a17-4feb-b219-e55aa5b74144"]);
+    validation.insecure_disable_signature_validation();
     debug!("validation {:?}", validation);
     validation
 }

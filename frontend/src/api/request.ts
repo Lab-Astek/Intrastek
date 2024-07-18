@@ -17,7 +17,7 @@ async function request(method: string, endpoint: string, data: any = {}) {
   return axios.request(config);
 }
 
-export async function log_auth(method: string, endpoint: string, token: string, data: any = {}) {
+export async function log_auth(method: string, endpoint: string, token: string) {
   let config = {
     method: method,
     maxBodyLength: Infinity,
@@ -26,7 +26,6 @@ export async function log_auth(method: string, endpoint: string, token: string, 
       'Authorization': `Bearer ${token}`,
       'Accept': 'application/json'
     },
-    data: data,
   };
   console.log('Sending request to backend with config:', config);
 
